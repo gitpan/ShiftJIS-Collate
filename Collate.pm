@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use vars qw($VERSION $PACKAGE @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 
-$VERSION = '0.05';
+$VERSION = '1.00';
 
 $PACKAGE = 'ShiftJIS::Collate'; # __PACKAGE__
 
@@ -824,7 +824,7 @@ sub getWt {
     my $ign  = $self->{ignoreChar};
 
     if ($str !~ m/^(?:$Char)*$/o) {
-	carp $PACKAGE . " Malformed Shift_JIS character";
+	carp $PACKAGE . " Malformed Shift-JIS character";
     }
 
     my($c, @buf);
@@ -935,7 +935,7 @@ sub index {
     return wantarray ?  ()  : -1 if $str eq '';
 
     if ($str !~ m/^(?:$Char)*$/o) {
-	carp $PACKAGE . " Malformed Shift_JIS character";
+	carp $PACKAGE . " Malformed Shift-JIS character";
     }
 
     my $count = 0;
@@ -988,7 +988,7 @@ __END__
 
 =head1 NAME
 
-ShiftJIS::Collate - collation of Shift_JIS strings
+ShiftJIS::Collate - collation of Shift-JIS strings
 
 =head1 SYNOPSIS
 
@@ -998,7 +998,7 @@ ShiftJIS::Collate - collation of Shift_JIS strings
 
 =head1 ABOUT THIS POD
 
-This POD is written in Shift_JIS.
+This POD is written in Shift-JIS.
 
 Do you see 'C<Ç†>' as C<HIRAGANA LETTER A>?
 or 'C<\>' as C<YEN SIGN>, not as C<REVERSE SOLIDUS>?
@@ -1008,7 +1008,7 @@ Otherwise you'd change your font to an appropriate one.
 =head1 DESCRIPTION
 
 This module provides some functions to compare and sort strings
-in Shift_JIS based on the collation of Japanese character strings.
+in Shift-JIS based on the collation of Japanese character strings.
 
 This module is an implementation of B<JIS X 4061:1996> and
 the collation rules are based on that standard.
@@ -1053,20 +1053,20 @@ If the parameter is true, this is reversed.
 
 Set the kanji class. See L<Kanji Classes>.
 
-  Level 1: 'saisho' (minimal)
-  Level 2: 'kihon' (basic)
-  Level 3: 'kakucho' (extended)
+  Class 1: 'saisho' (minimal)
+  Class 2: 'kihon' (basic)
+  Class 3: 'kakucho' (extended)
 
 The kanji class is specified as 1, 2, or 3. If omitted, class 2 is applied.
 
-This module does not provide collation of 'kakucho' kanji class
-since the repertory Shift_JIS does not define
+This module does not support 'kakucho' kanji class,
+since the repertoire of Shift-JIS does not define
 all the Unicode CJK unified ideographs.
 
 But if the kanji class 3 is specified, you can collate kanji
 in the unicode order. In this case you must provide
 L<tounicode> coderef which gives a unicode codepoint
-from a Shift_JIS character.
+from a Shift-JIS character.
 
 =item level
 
@@ -1086,10 +1086,10 @@ between 1 and 5. If omitted, level 4 is applied.
 
 If you want to collate kanji in the unicode order,
 specify a coderef which gives a unicode codepoint
-from a Shift_JIS character.
+from a Shift-JIS character.
 
 Such a subroutine should map a string comprising of
-a kanji of level 1 and 2 in Shift_JIS to a codepoint
+a kanji of level 1 and 2 in Shift-JIS to a codepoint
 in the range between 0x4E00 and 0x9FFF.
 
 =item position_in_bytes
@@ -1102,6 +1102,7 @@ If this parameter is true, it returns the results in bytes.
 
 If specified, the coderef is used to preprocess
 before the formation of sort keys.
+I.e. a sort key is formed from a return value returned by the coderef.
 
 =item upper_before_lower
 
@@ -1185,6 +1186,11 @@ See also F<sample/yomi.txt>.
 Sorts a list of references to arrays of (spell, reading)
 by B<kan'i-daihyo-yomi shogo>:
 'the simplified representative reading collation'.
+
+B<Note>: This module does not support B<kihon-daihyo-yomi shogo>:
+'the basic representative reading collation',
+in which B<daihyo-yomi jisho'>, a dictionary of representative readings,
+is required.
 
 B<kan'i-daihyo-yomi shogo> is carried out through B<five> comparison stages.
 This ordered list is an example of the result of C<"kan'i-daihyo-yomi shogo">.
@@ -1285,7 +1291,7 @@ If C<$level> is 1, you get C<"Ç™Ç»">;
 if C<$level> is 2 or 3, you get C<"ÉJÉi">;
 if C<$level> is 4 or 5, you get C<"Ç©Ç»">.
 
-If your C<substr> function is not oriented to Shift_JIS,
+If your C<substr> function is aware of Shift-JIS,
 specify true as C<position_in_bytes>. See L<Constructor and Tailoring>.
 
 =back
@@ -1296,28 +1302,34 @@ specify true as C<position_in_bytes>. See L<Constructor and Tailoring>.
 
 The following criteria are considered in order
 until the collation order is determined.
-By default, Levels 1 to 4 are applied and Level 5 is ignored
-(as JIS does NOT specify level 5).
+By default, Levels 1 to 4 are applied and Level 5 is ignored,
+as JIS X 4061 does not specify level 5.
 
 =over 4
 
 =item Level 1: alphabetic ordering.
 
-The character class early appeared in the following list is smaller.
+Character classes ordered as following:
 
-    Space characters, Symbols and Punctuations, Digits, Greek Letters,
-    Cyrillic Letters, Latin letters, Kana letters, Kanji ideographs,
-    and Geta mark.
+    1    space
+    2   'kijutsu kigou' (punctuation marks)
+    3   'kakko kigou' (quotes, parentheses, and braces)
+    4   'gakujutsu kigou' (mathematical and technical signs)
+    5   'ippan kigou' (general symbols)
+    6   'tan-i kigou' (unit signs)
+    7    digits (European)
+    8   'ouji kigou' (Greek and Cyrillic letters, as "European signs")
+    9    Latin alphabets
+   10    kana (haragana and katakana)
+   11    kanji
+   12   'geta' mark
 
 In the class, alphabets are collated alphabetically;
 kana letters are AIUEO-betically (in the Gozyuon order, 'å‹è\âπèá');
 kanji are in the JIS X 0208 order.
 
-Characters that do not belong to any character class are
-ignored and skipped for collation.
-
-Geta mark ('Å¨', 0x81AC, U+3013) is the greatest character
- (ordered at the last).
+According to JIS X 4061, C<GETA MARK> ('Å¨', 0x81AC, U+3013)
+must be the greatest character (ordered at the last).
 
 Any character for which the order is no defined,
 like control characters, box drawings, unassigned characters, etc.
@@ -1356,23 +1368,27 @@ A character that belongs to the block
 C<Halfwidth and Fullwidth Forms>
 is greater than the corresponding normal character.
 
-B<BN: JIS does not mention this level.
+B<BN: JIS X 4061 does not mention this level.
 Level 5 is an extention by this module.>
 
 =back
 
 =head2 Kanji Classes
 
-There are three kanji classes. This modules provides the Classes 1 and 2.
+JIS X 4061 specifies three Kanji Classes.
+This modules supports Kanji Class 1 and 2.
 
 =over 4
 
 =item Class 1: the 'saisho' (minimal) kanji class
 
-It comprises five kanji-like characters,
-i.e. 'ÅV' (0x8156, U+3003), 'ÅX' (0x8158, U+3005),
-'ÅW' (0x8157, U+4EDD), 'ÅY' (0x8159, U+3006),
-and 'ÅZ' (0x815A, U+3007).
+It comprises five kanji-like characters:
+
+    'ÅV' (0x8156, U+3003)
+    'ÅX' (0x8158, U+3005)
+    'ÅW' (0x8157, U+4EDD)
+    'ÅY' (0x8159, U+3006)
+    'ÅZ' (0x815A, U+3007)
 
 Any kanji except 'ÅW' are ignored on collation.
 
@@ -1418,7 +1434,7 @@ katakana corresponding to the preceding kana if exists.
   'Ç´Ç·Å[' to 'Ç´Ç·ÉA'
   'ÉsÉÖÅ[' to 'ÉsÉÖÉE'
   'ÉìÅ['   to 'ÉìÉì'
-  'ÇÒÅ[Å[' to 'ÇÒÉìÉì'
+  'ÇÒÅ['   to 'ÇÒÉì'
 
 =item HIRAGANA- and KATAKANA ITERATION MARKs
 
@@ -1480,7 +1496,7 @@ C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
 
     [the clause 6.2, JIS X 4061]
 
-  (1) charset: Shift_JIS.
+  (1) charset: Shift-JIS.
 
   (2) No limit of the number of characters in the string considered
       to collate.
@@ -1489,14 +1505,14 @@ C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
 
   (4) The following characters are added as collation elements.
 
-      IDEOGRAPHIC SPACE in the space class.
+      IDEOGRAPHIC SPACE is added in the space class.
 
       ACUTE ACCENT, GRAVE ACCENT, DIAERESIS, CIRCUMFLEX ACCENT
-      in the class of descriptive symbols.
+      are added in 'kijutsu kigou'.
 
-      APOSTROPHE, QUOTATION MARK in the class of parentheses.
+      APOSTROPHE, QUOTATION MARK are added in 'kakko kigou'.
 
-      HYPHEN-MINUS in the class of mathematical symbols.
+      HYPHEN-MINUS is added in 'gakujutsu kigou'.
 
   (5) Collation of Latin alphabets with macron and with circumflex
       is not supported.
@@ -1507,9 +1523,9 @@ C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
 
 =head1 AUTHOR
 
-Tomoyuki SADAHIRO
+SADAHIRO Tomoyuki
 
-Copyright (C) 2001-2002. All rights reserved.
+Copyright (C) 2001-2003. All rights reserved.
 
 E<lt>SADAHIRO@cpan.orgE<gt>
 
