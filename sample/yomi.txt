@@ -16,4 +16,6 @@ my @data = (
   [qw/ ŽR“c ‚â‚Ü‚¾ /],
 );
 
-@sort = ShiftJIS::Collate->new()->sortYomi(@data);
+@sort = ShiftJIS::Collate->new()->sortYomi(reverse @data);
+
+print "@$_\n" foreach @sort;

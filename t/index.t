@@ -7,7 +7,7 @@ use strict;
 use vars qw($loaded);
 $^W = 1;
 
-BEGIN { $| = 1; print "1..9\n"; }
+BEGIN { $| = 1; print "1..11\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use ShiftJIS::Collate;
 $loaded = 1;
@@ -81,3 +81,20 @@ if(@tmp = $mod->new(@pos, level => 4)->index($str, $sub))
   $match = substr($str, $tmp[0], $tmp[1]);
 }
 print ! defined $match ? "ok" : "not ok", " 9\n";
+
+$str = 'パールプログラミング';
+$sub = 'アルふ';
+
+$match = undef;
+if(@tmp = $mod->new(@pos, level => 1)->index($str, $sub))
+{
+  $match = substr($str, $tmp[0], $tmp[1]);
+}
+print $match eq 'ールプ' ? "ok" : "not ok", " 10\n";
+
+$match = undef;
+if(@tmp = $mod->new(@pos, level => 3)->index($str, $sub))
+{
+  $match = substr($str, $tmp[0], $tmp[1]);
+}
+print ! defined $match ? "ok" : "not ok", " 11\n";

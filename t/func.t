@@ -7,7 +7,7 @@ use strict;
 use vars qw($loaded);
 $^W = 1;
 
-BEGIN { $| = 1; print "1..14\n"; }
+BEGIN { $| = 1; print "1..17\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use ShiftJIS::Collate;
 $loaded = 1;
@@ -171,3 +171,49 @@ print $Collator->cmp('‚`', 'ˆŸ') == -1
    && $jis->cmp("ƒpƒp", "‚Ï‚Ï") == 1
     ? "ok 14\n" : "not ok 14\n";
 }
+
+
+{
+  my @hira = map "\x82".chr, 0x9F .. 0xF1;
+  my @kata = map "\x83".chr, 0x40 .. 0x7E, 0x80 .. 0x96;
+  my $i;
+
+  my $jis = new ShiftJIS::Collate;
+  my $kbh = new ShiftJIS::Collate katakana_before_hiragana => 1;
+  my $lv3 = new ShiftJIS::Collate level => 3;
+
+  for($i = 0; $i < @hira; $i++) {
+    last unless $jis->le($hira[$i], $kata[$i]);
+    last unless $kbh->ge($hira[$i], $kata[$i]);
+    last unless $lv3->eq($hira[$i], $kata[$i]);
+  }
+
+  print $i == @hira ? "ok 15\n" : "not ok 15\n";
+}
+
+{
+  my @lower = map "\x82".chr, 0x81 .. 0x9A;
+  my @upper = map "\x82".chr, 0x60 .. 0x79;
+  my $i;
+
+  my $jis = new ShiftJIS::Collate;
+  my $ubl = new ShiftJIS::Collate upper_before_lower => 1;
+  my $lv2 = new ShiftJIS::Collate level => 2;
+  my $lv3 = new ShiftJIS::Collate level => 3;
+  my $ul3 = new ShiftJIS::Collate level => 3, upper_before_lower => 1;
+
+  for($i = 0; $i < @lower; $i++) {
+    last unless $jis->le($lower[$i], $upper[$i]);
+    last unless $ubl->ge($lower[$i], $upper[$i]);
+    last unless $lv2->eq($lower[$i], $upper[$i]);
+    last unless $lv3->le($lower[$i], $upper[$i]);
+    last unless $ul3->ge($lower[$i], $upper[$i]);
+  }
+
+  print $i == @lower ? "ok 16\n" : "not ok 16\n";
+}
+
+my $obs; # 'overrideCJK' is obsolete and to be croaked.
+eval { $obs = new ShiftJIS::Collate overrideCJK => sub {}, level => 3; };
+
+print $@ ? "ok 17\n" : "not ok 17\n";
