@@ -1,0 +1,10 @@
+Changes
+Collate.pm
+Makefile.PL
+MANIFEST
+README
+t/test.t
+t/func.t
+t/index.t
+sample/daihyo.txt
+sample/yomi.txt
