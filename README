@@ -1,4 +1,4 @@
-ShiftJIS::Collate version 1.01
+ShiftJIS::Collate version 1.02
 ================
 
 SYNOPSIS
@@ -27,17 +27,18 @@ DEPENDENCIES
 
 POD
 
-The documents for this module are written in Shift-JIS.
+POD for this module is written in Shift-JIS.
 (The explanations are given in English,
 but some sample codes include Shift-JIS literals.)
 The CPAN Archiver should make it unreadable.
 
-The HTML-ized PODs are provided in my website.
+The HTML-ized POD is provided in my website.
 
-  Collate.pm
+  Collate.pod
     http://homepage1.nifty.com/nomenclator/perl/ShiftJIS-Collate.html
 
-  Collate.pod.jp
+The POD translated in Japanese is also provided in my website.
+
     http://homepage1.nifty.com/nomenclator/perl/ShiftJIS-Collate-j.html
 
 COPYRIGHT AND LICENCE

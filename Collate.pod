@@ -21,9 +21,11 @@ Otherwise you'd change your font to an appropriate one.
 =head1 DESCRIPTION
 
 This module provides some functions to compare and sort strings
-in Shift-JIS based on the collation of Japanese character strings.
+in Shift-JIS based on B<JIS X 4061:1996>,
+collation of Japanese character strings,
+"Nihongo mojiretsu shogo junban", Åuì˙ñ{åÍï∂éöóÒè∆çáèáî‘Åv.
 
-This module is an implementation of B<JIS X 4061:1996> and
+This module is an implementation of JIS X 4061:1996 and
 the collation rules are based on that standard.
 See L<Conformance to the Standard>.
 
@@ -178,19 +180,24 @@ Sorts a list of references to arrays of (spell, reading)
 by B<yomi-hyoki shogo>: 'the collation using readings and spells'.
 
 E.g., an element of @source is probably C<['ì˙ñ{åÍ', 'Ç…ÇŸÇÒÇ≤']>;
-Its opposite, C<['Ç…ÇŸÇÒÇ≤', 'ì˙ñ{åÍ']>, is also allowed, though.
+Though its opposite, C<['Ç…ÇŸÇÒÇ≤', 'ì˙ñ{åÍ']>, is also allowed,
+the order of (spell, reading) is not varied.
 
 B<Yomi-hyoki shogo> is carried out through two comparison stages.
 
 E.g., sort these strings by 'Yomi-hyoki shogo'.
 
-C<['âiìc', 'Ç»Ç™ÇΩ']>, C<['è¨éR', 'Ç®Ç‚Ç‹']>, C<['í∑ìc', 'Ç®Ç≥Çæ']>, C<['í∑ìc', 'Ç»Ç™ÇΩ']>, C<['è¨éR', 'Ç±Ç‚Ç‹']>.
+C<['âiìc', 'Ç»Ç™ÇΩ']>, C<['è¨éR', 'Ç®Ç‚Ç‹']>, C<['í∑ìc', 'Ç®Ç≥Çæ']>,
+C<['í∑ìc', 'Ç»Ç™ÇΩ']>, C<['è¨éR', 'Ç±Ç‚Ç‹']>.
 
 First, order by reading
 (C<'Ç®Ç≥Çæ'> E<lt> C<'Ç®Ç‚Ç‹'> E<lt> 'Ç±Ç‚Ç‹' E<lt> 'Ç»Ç™ÇΩ');
-next, order by spelling among strings having the same reading (C<'âiìc'> E<lt> C<'í∑ìc'> where both are read as C<'Ç»Ç™ÇΩ'>).
+next, order by spelling among strings having the same reading
+(C<'âiìc'> E<lt> C<'í∑ìc'> where both are read as C<'Ç»Ç™ÇΩ'>).
 
-The result should be C<['í∑ìc', 'Ç®Ç≥Çæ']> E<lt> C<['è¨éR', 'Ç®Ç‚Ç‹']> E<lt> C<['è¨éR', 'Ç±Ç‚Ç‹']> E<lt> C<['âiìc', 'Ç»Ç™ÇΩ']> E<lt> C<['í∑ìc', 'Ç»Ç™ÇΩ']>.
+The result should be C<['í∑ìc', 'Ç®Ç≥Çæ']> E<lt> C<['è¨éR', 'Ç®Ç‚Ç‹']>
+E<lt> C<['è¨éR', 'Ç±Ç‚Ç‹']> E<lt> C<['âiìc', 'Ç»Ç™ÇΩ']> E<lt>
+C<['í∑ìc', 'Ç»Ç™ÇΩ']>.
 
 See also F<sample/yomi.txt>.
 
@@ -241,7 +248,8 @@ This ordered list is an example of the result of C<"kan'i-daihyo-yomi shogo">.
 
 (1) Compare the character class of the first character of the spell.
 
-  Digit class ('ÇSñ ëÃ') < Greek class ('ÉøïˆâÛ') < Latin class ('ÇiÇhÇr') < Kanji class ('ä÷ìå').
+  Digit class ('ÇSñ ëÃ') < Greek class ('ÉøïˆâÛ') <
+Latin class ('ÇiÇhÇr') < Kanji class ('ä÷ìå').
 
 (2) Compare the first character of the reading.
 
@@ -316,7 +324,7 @@ specify true as C<position_in_bytes>. See L<Constructor and Tailoring>.
 The following criteria are considered in order
 until the collation order is determined.
 By default, Levels 1 to 4 are applied and Level 5 is ignored,
-as JIS X 4061 does not specify level 5.
+for JIS X 4061 does not specify level 5.
 
 =over 4
 
@@ -389,11 +397,11 @@ Level 5 is an extention by this module.>
 =head2 Kanji Classes
 
 JIS X 4061 specifies three Kanji Classes.
-This modules supports Kanji Class 1 and 2.
+This modules supports 'Saisho' and 'Kihon' Kanji Classes.
 
 =over 4
 
-=item Class 1: the 'saisho' (minimal) kanji class
+=item the 'saisho' (minimal) kanji class
 
 It comprises five kanji-like characters:
 
@@ -405,13 +413,13 @@ It comprises five kanji-like characters:
 
 Any kanji except 'ÅW' are ignored on collation.
 
-=item Class 2: the 'kihon' (basic) kanji class
+=item the 'kihon' (basic) kanji class
 
 It comprises JIS level 1 and 2 kanji in addition to
 the minimal kanji class. Sorted in the JIS codepoint order.
 Any kanji excepting those defined by JIS X 0208 are ignored on collation.
 
-=item Class 3: the 'kakucho' (extended) kanji class
+=item the 'kakucho' (extended) kanji class
 
 All the CJK Unified Ideographs in addition to
 the minimal kanji class. Sorted in the Unicode codepoint order.
@@ -505,9 +513,7 @@ C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
 
 =back
 
-=head2 Conformance to the Standard
-
-    [the clause 6.2, JIS X 4061]
+=head2 Conformance to the Standard [JIS X 4061, 6.2]
 
   (1) charset: Shift-JIS.
 
@@ -536,13 +542,11 @@ C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
 
 =head1 AUTHOR
 
-SADAHIRO Tomoyuki
+SADAHIRO Tomoyuki <SADAHIRO@cpan.org>
+
+  http://homepage1.nifty.com/nomenclator/perl/
 
 Copyright (C) 2001-2003. All rights reserved.
-
-E<lt>SADAHIRO@cpan.orgE<gt>
-
-http://homepage1.nifty.com/nomenclator/perl/
 
 This module is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.
@@ -551,33 +555,34 @@ and/or modify it under the same terms as Perl itself.
 
 =over 4
 
-=item *
+=item JIS X 4061
 
-JIS X 4061 [Collation of Japanese character strings]
+Collation of Japanese character strings
 
-=item *
+=item JIS X 0201
 
-JIS X 0201 [7-bit and 8-bit coded character sets
-for information interchange]
+7-bit and 8-bit coded character sets for information interchange
 
-=item *
+=item JIS X 0208
 
-JIS X 0208 [7-bit and 8-bit double byte coded KANJI sets
-for information interchange]
+7-bit and 8-bit double byte coded KANJI sets for information interchange
 
-=item *
+=item JIS X 0221
 
-JIS X 0221 [Information technology - Universal Multiple-Octet Coded
-Character Set (UCS) - part 1 : Architectute and Basic Multilingual Plane].
-This is a translation of ISO/IEC 10646-1.
+Information technology - Universal Multiple-Octet Coded
+Character Set (UCS) - part 1 : Architectute and Basic Multilingual Plane
 
-=item *
+=item Japanese Industrial Standards Committee (JISC)
 
-L<ShiftJIS::String>
+L<http://www.jisc.go.jp/>
 
-=item *
+=item Japanese Standards Association (JSA)
 
-L<ShiftJIS::Regexp>
+L<http://www.jsa.or.jp/>
+
+=item L<ShiftJIS::String>
+
+=item L<ShiftJIS::Regexp>
 
 =back
 

@@ -1,5 +1,10 @@
 Revision history for Perl extension ShiftJIS::Collate.
 
+1.02  Sat Oct 18 21:05:21 2003
+	- some POD modification
+	- removed JP pod.
+	- added link to JISC in SEE ALSO in POD.
+
 1.01  Sun Aug 17 22:12:24 2003
 	- English POD (.pod) separated from .pm
 	  (CPAN indexer maybe prefers .pod.jp to .pm)
