@@ -1,9 +1,9 @@
-ShiftJIS::Collate version 0.01
+ShiftJIS::Collate version 0.02
 ================
 
 SYNOPSIS
 
-A perl module compares and sorts a list of Shift_JIS strings
+A perl module compares and sorts Shift_JIS strings
 using JIS X 4061, "the collation of Japanese character strings".
 
     use ShiftJIS::Collate;
@@ -23,7 +23,7 @@ To install this module type the following:
 
 DEPENDENCIES
 
-perl 5.003 or later
+Perl 5.003 or later
 
 COPYRIGHT AND LICENCE
 

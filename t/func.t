@@ -82,14 +82,30 @@ print $Collator->cmp("XYZ", "ABC") == 1
    && $Collator->cmp("xyz", "ABC") == 1 
     ? "ok 9\n" : "not ok 9\n";
 
-print $Collator->cmp("ああ", "あゝ") == 1
-   && $mod->new( level => 3 )->cmp("ああ", "あゝ") == 1
-   && $mod->new( level => 3 )->cmp("あぁ", "あゝ") == -1
-   && $mod->new( level => 2 )->cmp("ああ", "あゝ") == 0
-   && $mod->new( level => 1 )->cmp("ああ", "あゞ") == -1
-   && $mod->new( level => 2 )->cmp("ただ", "たゝ") == 1
-   && $mod->new( level => 2 )->cmp("ただ", "たゞ") == 0
-   && $mod->new( level => 1 )->cmp("ただ", "たゝ") == 0
+print $Collator->gt("ああ", "あゝ")
+   && $Collator->ge("ああ", "あゝ")
+   && $Collator->ne("ああ", "あゝ")
+   && $mod->new( level => 3 )->gt("ああ", "あゝ")
+   && $mod->new( level => 3 )->ge("ああ", "あゝ")
+   && $mod->new( level => 3 )->ne("ああ", "あゝ")
+   && $mod->new( level => 3 )->lt("あぁ", "あゝ")
+   && $mod->new( level => 3 )->le("あぁ", "あゝ")
+   && $mod->new( level => 3 )->ne("あぁ", "あゝ")
+   && $mod->new( level => 2 )->eq("ああ", "あゝ")
+   && $mod->new( level => 2 )->ge("ああ", "あゝ")
+   && $mod->new( level => 2 )->le("ああ", "あゝ")
+   && $mod->new( level => 1 )->lt("ああ", "あゞ")
+   && $mod->new( level => 1 )->le("ああ", "あゞ")
+   && $mod->new( level => 1 )->ne("ああ", "あゞ")
+   && $mod->new( level => 2 )->gt("ただ", "たゝ")
+   && $mod->new( level => 2 )->ge("ただ", "たゝ")
+   && $mod->new( level => 2 )->ne("ただ", "たゝ")
+   && $mod->new( level => 2 )->eq("ただ", "たゞ")
+   && $mod->new( level => 2 )->ge("ただ", "たゞ")
+   && $mod->new( level => 2 )->le("ただ", "たゞ")
+   && $mod->new( level => 1 )->eq("ただ", "たゝ")
+   && $mod->new( level => 1 )->ge("ただ", "たゝ")
+   && $mod->new( level => 1 )->le("ただ", "たゝ")
     ? "ok 10\n" : "not ok 10\n";
 
 print $Collator->cmp("パアル", "パール") == 1
@@ -122,7 +138,7 @@ print $Collator->cmp('Ａ', '亜') == -1
 {
   my(@subject, $sorted);
 
-  my $delete_prolong = sub {
+  my $delProlong = sub {
       my $str = shift;
       $str =~ s/\G(
 	(?:[\x00-\x7F\xA1-\xDF]|[\x81-\x9F\xE0-\xFC][\x40-\x7E\x80-\xFC])*?
@@ -130,7 +146,9 @@ print $Collator->cmp('Ａ', '亜') == -1
       $str;
     };
 
-  my $ignore_prolong = $mod->new(preprocess => $delete_prolong);
+  my $delete_prolong = $mod->new(preprocess => $delProlong);
+
+  my $ignore_prolong = $mod->new(ignoreChar => '^(?:\x81\x5B|\xB0)');
 
   my $jis    = new ShiftJIS::Collate;
   my $level2 = new ShiftJIS::Collate level => 2;
@@ -142,7 +160,8 @@ print $Collator->cmp('Ａ', '亜') == -1
   @subject = qw(パロディ パイナップル バナナ ハット はな パール バーナー);
 
   print 
-   $sorted eq join(' ', $ignore_prolong->sort(@subject))
+      $sorted eq join(' ', $ignore_prolong->sort(@subject))
+   && $sorted eq join(' ', $delete_prolong->sort(@subject))
    && $level2->cmp("パアル", "パール") == 0
    && $level3->cmp("パアル", "パール") == 1
    && $level3->cmp("パァル", "パール") == 1

@@ -35,8 +35,7 @@ my @data = (
 
 use ShiftJIS::CP932::MapUTF;
 
-$cjk = sub { [ unpack('v', cp932_to_utf16(shift)), 50, 20, 10, 1 ] },
-
+$cjk = sub { [ unpack('v', cp932_to_utf16(shift)), 50, 20, 10, 1 ] };
 
 @sort = ShiftJIS::Collate->new( overrideCJK => $cjk )
   ->sortDaihyo(reverse @data);

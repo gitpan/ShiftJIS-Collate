@@ -7,7 +7,7 @@ use strict;
 use vars qw($loaded);
 $^W = 1;
 
-BEGIN { $| = 1; print "1..6\n"; }
+BEGIN { $| = 1; print "1..9\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use ShiftJIS::Collate;
 $loaded = 1;
@@ -54,3 +54,30 @@ if(@tmp = $mod->new(@pos, level => 5)->index($str, $sub))
 }
 print $match eq 'かな' ? "ok" : "not ok", " 6\n";
 
+$str = "* ひらｶﾞな  とカタカナはレベル３では等しいかな。";
+$sub = "かな";
+
+if(@tmp = $mod->new(@pos, level => 1)->index($str, $sub))
+{
+  $match = substr($str, $tmp[0], $tmp[1]);
+}
+print $match eq 'ｶﾞな' ? "ok" : "not ok", " 7\n";
+
+$str = "* ひらがなとカタカナはレベル３では等しいかな。";
+$sub = "ｶﾞﾅ";
+
+if(@tmp = $mod->new(@pos, level => 1)->index($str, $sub))
+{
+  $match = substr($str, $tmp[0], $tmp[1]);
+}
+print $match eq 'がな' ? "ok" : "not ok", " 8\n";
+
+$str = "* ひらがなとカタカナはレベル３では等しいかな。";
+$sub = "ｶﾞﾅ";
+
+$match = undef;
+if(@tmp = $mod->new(@pos, level => 4)->index($str, $sub))
+{
+  $match = substr($str, $tmp[0], $tmp[1]);
+}
+print ! defined $match ? "ok" : "not ok", " 9\n";

@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use vars qw($VERSION $PACKAGE @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 $PACKAGE = 'ShiftJIS::Collate'; # __PACKAGE__
 
@@ -799,7 +799,8 @@ sub _replaced($$)
 }
 
 sub _length{
-  scalar( (my $str = shift) =~ s/$Char//go );
+  my $str = shift;
+  0 + $str =~ s/[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[\x00-\xFF]//g;
 }
 
 sub getWtCJK
@@ -817,6 +818,7 @@ sub getWt
   my $self = shift;
   my $str  = $self->{preprocess} ? &{ $self->{preprocess} }(shift) : shift;
   my $kan  = $self->{kanji};
+  my $ign  = $self->{ignoreChar};
 
   if($str !~ m/^(?:$Char)*$/o){
     carp $PACKAGE . " Malformed Shift_JIS character";
@@ -825,6 +827,8 @@ sub getWt
   my($c, @buf);
   for $c ($str =~ m/$Char/go){
     next unless $Order{$c} || $kan > 1 && $c =~ /^$CJK$/o;
+    next if defined $ign && $c =~ /$ign/;
+
     my $replaced;
     $replaced = _replaced($c, $buf[-1][0]) if $Replaced{$c} && @buf;
 
@@ -872,9 +876,44 @@ sub getSortKey
 sub cmp
 {
   my $obj = shift;
-  my $a   = shift;
-  my $b   = shift;
-  $obj->getSortKey($a) cmp $obj->getSortKey($b);
+  $obj->getSortKey($_[0]) cmp $obj->getSortKey($_[1]);
+}
+
+sub eq
+{
+  my $obj = shift;
+  $obj->getSortKey($_[0]) eq $obj->getSortKey($_[1]);
+}
+
+sub ne
+{
+  my $obj = shift;
+  $obj->getSortKey($_[0]) ne $obj->getSortKey($_[1]);
+}
+
+sub gt
+{
+  my $obj = shift;
+  $obj->getSortKey($_[0]) gt $obj->getSortKey($_[1]);
+}
+
+sub ge
+{
+  my $obj = shift;
+  $obj->getSortKey($_[0]) ge $obj->getSortKey($_[1]);
+}
+
+sub lt
+{
+  my $obj = shift;
+  $obj->getSortKey($_[0]) lt $obj->getSortKey($_[1]);
+}
+
+
+sub le
+{
+  my $obj = shift;
+  $obj->getSortKey($_[0]) le $obj->getSortKey($_[1]);
 }
 
 sub sort
@@ -934,6 +973,7 @@ sub index
   my $sub  = shift;
   my $byte = $self->{position_in_bytes};
   my $kan  = $self->{kanji};
+  my $ign  = $self->{ignoreChar};
   my $lev  = $self->{level};
 
   my @subWt = $self->getWt($sub);
@@ -948,7 +988,7 @@ sub index
   my($c, $prev, @strWt, @strPt);
   for $c ($str =~ m/$Char/go){
     my $cur;
-
+    next if defined $ign && $c =~ /$ign/;
     if($Order{$c} || $kan > 1 && $c =~ /^$CJK$/o){
       $cur   = _replaced($c, $prev->[0]) if $Replaced{$c} && $prev;
       $cur ||= $Order{$c} ? $Order{$c} :
@@ -1010,15 +1050,16 @@ This module provides some functions to compare and sort strings
 in the ShiftJIS encoding
 using the collation of Japanese character strings.
 
-This module is an implementation of JIS X 4061-1996 and
+This module is an implementation of B<JIS X 4061:1996> and
 the collation rules are based on that standard.
-See L<Informations for Conformance>.
+See L<Conformance on the Standard>.
 
 =head2 Constructor and Tailoring
 
 The C<new> method returns a collator object.
 
    $Collator = ShiftJIS::Collate->new(
+      ignoreChar => $regexIgnoredChar,
       kanji => $kanji_class,
       katakana_before_hiragana => $bool,
       level => $collationLevel,
@@ -1031,6 +1072,16 @@ The C<new> method returns a collator object.
    # $Collator should do the default collation.
 
 =over 4
+
+=item ignoreChar
+
+If specified as a regex,
+any characters that match it are ignored on collation.
+
+e.g. If you want to ignore KATAKANA PROLONGED SOUND MARK
+and its halfwidth form, say
+
+   ignoreChar => '^(?:\x81\x5B|\xB0)',
 
 =item katakana_before_hiragana
 
@@ -1073,7 +1124,7 @@ uses the JIS codepoint order.
 
 The mapping of CJK Unified Ideographs may be overrided by this parameter.
 
-ex. CJK Unified Ideographs in the Unicode codepoint order.
+e.g. CJK Unified Ideographs in the Unicode codepoint order.
 
   overrideCJK => sub {
     my $c = shift;               # get Shift_JIS kanji
@@ -1101,7 +1152,7 @@ If the parameter is true, this is reversed.
 
 =back
 
-=head2 Other Methods
+=head2 Comparison
 
 =over 4
 
@@ -1110,6 +1161,26 @@ If the parameter is true, this is reversed.
 Returns 1 (when C<$a> is greater than C<$b>)
 or 0 (when C<$a> is equal to C<$b>)
 or -1 (when C<$a> is lesser than C<$b>).
+
+=item C<$result = $Collator-E<gt>eq($a, $b)>
+
+=item C<$result = $Collator-E<gt>ne($a, $b)>
+
+=item C<$result = $Collator-E<gt>gt($a, $b)>
+
+=item C<$result = $Collator-E<gt>ge($a, $b)>
+
+=item C<$result = $Collator-E<gt>lt($a, $b)>
+
+=item C<$result = $Collator-E<gt>le($a, $b)>
+
+They works like the same name operators as theirs.
+
+=back
+
+=head2 Sorting
+
+=over 4
 
 =item C<@sorted = $Collator-E<gt>sort(@not_sorted)>
 
@@ -1138,6 +1209,12 @@ and get the result of the comparison of the strings.
       is equivalent to
 
    $Collator->cmp($a, $b)
+
+=back
+
+=head2 Searching
+
+=over 4
 
 =item C<$position = $Collator-E<gt>index($string, $substring)>
 
@@ -1208,7 +1285,7 @@ ignored and skipped for collation.
 In kana, the order is as shown the following list.
 
     A voiceless kana, the voiced, then the semi-voiced (if exists).
-     (eg. Ka before Ga; Ha before Ba before Pa)
+     (eg. Ka < Ga; Ha < Ba < Pa)
 
 =item Level 3: case ordering.
 
@@ -1220,11 +1297,11 @@ see L<Replacement of PROLONGED SOUND MARK and ITERATION MARKs>.
     Replaced PROLONGED SOUND MARK (U+30FC);
     Small Kana;
     Replaced ITERATION MARK (U+309D, U+309E, U+30FD or U+30FE);
-    then Normal Kana.
+    then, Normal Kana.
 
 =item Level 4: script ordering.
 
-Hiragana is lesser than katakana.
+Any hiragana is lesser than the corresponding katakana.
 
 =item Level 5: width ordering.
 
@@ -1242,29 +1319,29 @@ There are three kanji classes. This modules provides the Classes 1 and 2.
 
 =over 4
 
-=item Class 1: the 'saisho' (minimum) kanji class
+=item Class 1: the 'saisho' (minimal) kanji class
 
-It comprises five kanji-like chars,
+It comprises five kanji-like characters,
 i.e. U+3003, U+3005, U+4EDD, U+3006, U+3007.
 Any kanji except U+4EDD are ignored on collation.
 
 =item Class 2: the 'kihon' (basic) kanji class
 
-It comprises JIS levels 1 and 2 kanji in addition to 
-the minimum kanji class. Sorted in the JIS order.
+It comprises JIS level 1 and 2 kanji in addition to 
+the minimal kanji class. Sorted in the JIS codepoint order.
 Any kanji excepting those defined by JIS X 0208 are ignored on collation.
 
 =item Class 3: the 'kakucho' (extended) kanji class
 
 All the CJK Unified Ideographs in addition to 
-the minimum kanji class. Sorted in the unicode order.
+the minimal kanji class. Sorted in the Unicode codepoint order.
 
 =back
 
 
 =head2 Replacement of PROLONGED SOUND MARK and ITERATION MARKs
 
-        RFC1345 UCS
+        RFC1345  UCS
 	[*5]    U+309D  HIRAGANA ITERATION MARK
 	[+5]    U+309E  HIRAGANA VOICED ITERATION MARK
 	[-6]    U+30FC  KATAKANA-HIRAGANA PROLONGED SOUND MARK
@@ -1282,7 +1359,7 @@ the replacing kana, while ternary not equal to.
 
 =item KATAKANA-HIRAGANA PROLONGED SOUND MARK
 
-The PROLONGED MARK is repleced to normal vowel or nasal
+The PROLONGED MARK is repleced to a normal vowel or nasal
 katakana corresponding to the preceding kana if exists.
 
   eg.	[Ka][-6] to [Ka][A6]
@@ -1293,7 +1370,7 @@ katakana corresponding to the preceding kana if exists.
 =item HIRAGANA- and KATAKANA ITERATION MARKs
 
 The ITERATION MARKs (VOICELESS) are repleced 
-to normal kana corresponding to the preceding kana if exists.
+to a normal kana corresponding to the preceding kana if exists.
 
   eg.	[Ka][*6] to [Ka][Ka]
 	[Do][*5] to [Do][to]
@@ -1303,7 +1380,7 @@ to normal kana corresponding to the preceding kana if exists.
 
 =item HIRAGANA- and KATAKANA VOICED ITERATION MARKs
 
-The VOICED ITERATION MARKs are repleced to the voiced kana
+The VOICED ITERATION MARKs are repleced to a voiced kana
 corresponding to the preceding kana if exists.
 
   eg.	[ha][+5] to [ha][ba]
@@ -1336,9 +1413,9 @@ C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
 
 =back
 
-=head2 Informations for Conformance
+=head2 Conformance on the Standard
 
-    [according to the article 6.2, JIS X 4061]
+    [cf. the article 6.2, JIS X 4061]
 
   (1) charset: Shift_JIS.
 
@@ -1361,8 +1438,8 @@ C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
   (5) Collation of Latin alphabets with macron and with circumflex
       is not supported.
 
-  (6) Selected kanji class:
-       the minimum kanji class (Five kanji-like chars).
+  (6) L<Kanji Classes>:
+       the minimal kanji class (Five kanji-like chars).
        the basic kanji class (Levels 1 and 2 kanji, JIS)..
 
 =head1 AUTHOR
@@ -1392,7 +1469,7 @@ for information interchange]
 
 JIS X 0221 [Information technology - Universal Multiple-Octet Coded
 Character Set (UCS) - part 1 : Architectute and Basic Multilingual Plane].
-That is translated from ISO/IEC 10646-1 and introduced into JIS.
+This is a translation of ISO/IEC 10646-1.
 
 =item *
 
