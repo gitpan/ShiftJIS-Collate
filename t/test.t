@@ -22,7 +22,7 @@ for $i (2..$num){
   my $arr  = join ":",@arr;
   my @sort = $Collator->sort(@arr);
   my $sort = join ":",@sort;
-  print $sort eq $data ? "ok $i\n" : "not ok $i\n";
+  print $sort eq $data ? "ok" : "not ok", " $i\n";
 }
 
 sub shuffle {

@@ -7,7 +7,7 @@ use strict;
 use vars qw($loaded);
 $^W = 1;
 
-BEGIN { $| = 1; print "1..17\n"; }
+BEGIN { $| = 1; print "1..20\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use ShiftJIS::Collate;
 $loaded = 1;
@@ -38,22 +38,22 @@ for(@data){
   @h{ @$_ } =();
   $s ++ unless join(":", @$_) eq join(":", $Collator->sort(keys %h));
 }
-print ! $s ? "ok 2\n" : "not ok 2\n";
+print ! $s ? "ok" : "not ok", " 2\n";
 
 print $Collator->cmp("Perl", "Ｐｅｒｌ") == 0
    && $mod->new( level => 4 )->cmp("Perl", "Ｐｅｒｌ") == 0
    && $mod->new( level => 5 )->cmp("Perl", "Ｐｅｒｌ") == -1
-    ? "ok 3\n" : "not ok 3\n";
+    ? "ok" : "not ok", " 3\n";
 
 print $Collator->cmp("PERL", "Ｐｅｒｌ") == 1
    && $mod->new( level => 3 )->cmp("PERL", "Ｐｅｒｌ") == 1
    && $mod->new( level => 2 )->cmp("PERL", "Ｐｅｒｌ") == 0
-    ? "ok 4\n" : "not ok 4\n";
+    ? "ok" : "not ok", " 4\n";
 
 print $Collator->cmp("Perl", "ＰＥＲＬ") == -1
    && $mod->new( level => 3 )->cmp("Perl", "ＰＥＲＬ") == -1
    && $mod->new( level => 2 )->cmp("Perl", "ＰＥＲＬ") == 0
-    ? "ok 5\n" : "not ok 5\n";
+    ? "ok" : "not ok", " 5\n";
 
 print $Collator->cmp("あいうえお", "アイウエオ") == -1
    && $mod->new( level => 3 )->cmp("あいうえお", "アイウエオ") == 0
@@ -67,20 +67,19 @@ print $Collator->cmp("あいうえお", "アイウエオ") == -1
           ->cmp("perl", "PERL") == 1
    && $mod->new( upper_before_lower => 1,
             level => 2 )->cmp("perl", "PERL") == 0
-
-    ? "ok 6\n" : "not ok 6\n";
+    ? "ok" : "not ok", " 6\n";
 
 print $Collator->cmp("ｱｲｳｴｵ", "アイウエオ") == 0
    && $mod->new( level => 5 )->cmp("ｱｲｳｴｵ", "アイウエオ") == 1
-    ? "ok 7\n" : "not ok 7\n";
+    ? "ok" : "not ok", " 7\n";
 
 print $Collator->cmp("XYZ", "abc") == 1
    && $mod->new( level => 1 )->cmp("XYZ", "abc") == 1
-    ? "ok 8\n" : "not ok 8\n";
+    ? "ok" : "not ok", " 8\n";
 
 print $Collator->cmp("XYZ", "ABC") == 1
    && $Collator->cmp("xyz", "ABC") == 1
-    ? "ok 9\n" : "not ok 9\n";
+    ? "ok" : "not ok", " 9\n";
 
 print $Collator->gt("ああ", "あゝ")
    && $Collator->ge("ああ", "あゝ")
@@ -106,13 +105,13 @@ print $Collator->gt("ああ", "あゝ")
    && $mod->new( level => 1 )->eq("ただ", "たゝ")
    && $mod->new( level => 1 )->ge("ただ", "たゝ")
    && $mod->new( level => 1 )->le("ただ", "たゝ")
-    ? "ok 10\n" : "not ok 10\n";
+    ? "ok" : "not ok", " 10\n";
 
 print $Collator->cmp("パアル", "パール") == 1
    && $mod->new( level => 3 )->cmp("パアル", "パール") == 1
    && $mod->new( level => 3 )->cmp("パァル", "パール") == 1
    && $mod->new( level => 2 )->cmp("パアル", "パール") == 0
-    ? "ok 11\n" : "not ok 11\n";
+    ? "ok" : "not ok", " 11\n";
 
 print $Collator->cmp("", "") == 0
    && $mod->new( level => 1 )->cmp("", "") == 0
@@ -124,7 +123,7 @@ print $Collator->cmp("", "") == 0
    && $Collator->cmp("", "\n") == 0
    && $Collator->cmp("\n ", "\n \r") == 0
    && $Collator->cmp(" ", "\n \r") == 0
-    ? "ok 12\n" : "not ok 12\n";
+    ? "ok" : "not ok", " 12\n";
 
 print $Collator->cmp('Ａ', '亜') == -1
    && $mod->new( level => 1, kanji => 1 )->cmp('Ａ', '亜') == 1
@@ -133,7 +132,7 @@ print $Collator->cmp('Ａ', '亜') == -1
    && $mod->new( level => 1, kanji => 1 )->cmp('亜', '一', 1, 1) == 0
    && $mod->new( level => 1, kanji => 2 )->cmp('亜', '一', 1, 2) == -1
    && $Collator->cmp('〓', '熙') == 1
-    ? "ok 13\n" : "not ok 13\n";
+    ? "ok" : "not ok", " 13\n";
 
 {
   my(@subject, $sorted);
@@ -169,7 +168,7 @@ print $Collator->cmp('Ａ', '亜') == -1
    && $level5->cmp("パール", "ﾊﾟｰﾙ",4) == -1
    && $level2->cmp("パパ", "ぱぱ") == 0
    && $jis->cmp("パパ", "ぱぱ") == 1
-    ? "ok 14\n" : "not ok 14\n";
+    ? "ok" : "not ok", " 14\n";
 }
 
 
@@ -188,7 +187,7 @@ print $Collator->cmp('Ａ', '亜') == -1
     last unless $lv3->eq($hira[$i], $kata[$i]);
   }
 
-  print $i == @hira ? "ok 15\n" : "not ok 15\n";
+  print $i == @hira ? "ok" : "not ok", " 15\n";
 }
 
 {
@@ -210,10 +209,82 @@ print $Collator->cmp('Ａ', '亜') == -1
     last unless $ul3->ge($lower[$i], $upper[$i]);
   }
 
-  print $i == @lower ? "ok 16\n" : "not ok 16\n";
+  print $i == @lower ? "ok" : "not ok", " 16\n";
 }
 
 my $obs; # 'overrideCJK' is obsolete and to be croaked.
 eval { $obs = new ShiftJIS::Collate overrideCJK => sub {}, level => 3; };
 
-print $@ ? "ok 17\n" : "not ok 17\n";
+print $@ ? "ok" : "not ok", " 17\n";
+
+print 1
+   && $mod->new( level => 3 )->gt('ハハハハ', 'ハヽヽヽ')
+   && $mod->new( level => 2 )->eq('ハハハハ', 'ハヽヽヽ')
+   && $mod->new( level => 3 )->gt('キイイイ', 'キーーー')
+   && $mod->new( level => 2 )->eq('キイイイ', 'キーーー')
+    ? "ok" : "not ok", " 18\n";
+
+##########
+
+my (@source, $result);
+
+@source = (
+  ['永田', 'ながた'],
+  ['小山', 'おやま'],
+  ['長田', 'おさだ'],
+  ['長田', 'ながた'],
+  ['小山', 'こやま'],
+);
+
+$result = join ';', map join(',', @$_),
+		$Collator->sortYomi(@source);
+
+print $result eq 
+  '長田,おさだ;小山,おやま;小山,こやま;永田,ながた;長田,ながた'
+? "ok" : "not ok", " 19\n";
+
+@source = (
+  ['澤島',   'さわしま'],
+  ['４面体', 'しめんたい'],
+  ['河田',   'かわだ'],
+  ['土井',   'つちい'],
+  ['α崩壊', 'アルファほうかい'],
+  ['Γ関数', 'ガンマかんすう'],
+  ['Perl',   'パール'],
+  ['４次元', 'よじげん'],
+  ['β線',   'ベータせん'],
+  ['角田',   'かくた'],
+  ['沢島',   'さわしま'],
+  ['河内',   'かわち'],
+  ['沢田',   'さわだ'],
+  ['河内',   'こうち'],
+  ['２色性', 'にしょくせい'],
+  ['澤田',   'さわだ'],
+  ['土井',   'どい'],
+  ['Ｑ値',   'キューち'],
+  ['河西',   'かさい'],
+  ['澤嶋',   'さわしま'],
+  ['ＪＩＳ', 'じす'],
+  ['関東',   'かんとう'],
+  ['河辺',   'かわべ'],
+  ['沢嶋',   'さわしま'],
+  ['角田',   'かどた'],
+  ['土居',   'つちい'],
+  ['６面体', 'ろくめんたい'],
+  ['角田',   'つのだ'],
+  ['土居',   'どい'],
+  ['河合',   'かわい'],
+);
+
+$result = join ';', map join(',', @$_),
+		$Collator->sortDaihyo(@source);
+
+print $result eq
+  '４面体,しめんたい;２色性,にしょくせい;４次元,よじげん;' .
+  '６面体,ろくめんたい;α崩壊,アルファほうかい;Γ関数,ガンマかんすう;' .
+  'β線,ベータせん;Ｑ値,キューち;ＪＩＳ,じす;Perl,パール;河西,かさい;' .
+  '河合,かわい;河田,かわだ;河内,かわち;河辺,かわべ;角田,かくた;' .
+  '角田,かどた;関東,かんとう;河内,こうち;沢島,さわしま;沢嶋,さわしま;' .
+  '沢田,さわだ;澤島,さわしま;澤嶋,さわしま;澤田,さわだ;角田,つのだ;' .
+  '土井,つちい;土居,つちい;土井,どい;土居,どい'
+? "ok" : "not ok", " 20\n";

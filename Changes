@@ -1,5 +1,10 @@
 Revision history for Perl extension ShiftJIS::Collate.
 
+0.05  Tue Sep 17 22:35:04 2002
+	- doc tweak; especially,
+	  about "Yomi-shoki hyogo" and "kan'i-daihyo-yomi shogo".
+	- add some tests.
+
 0.04  Sun May 05 10:36:02 2002
 	- add some tests for index().
 	- modify docs.
