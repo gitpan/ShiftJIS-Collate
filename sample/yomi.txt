@@ -19,3 +19,4 @@ my @data = (
 @sort = ShiftJIS::Collate->new()->sortYomi(reverse @data);
 
 print "@$_\n" foreach @sort;
+

@@ -1,4 +1,4 @@
-ShiftJIS::Collate version 0.02
+ShiftJIS::Collate version 0.04
 ================
 
 SYNOPSIS
@@ -27,7 +27,7 @@ Perl 5.003 or later
 
 COPYRIGHT AND LICENCE
 
-This program is free software; you can redistribute it and/or 
-modify it under the same terms as Perl itself.
+This module is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
 
-Copyright (C) 2001, SADAHIRO Tomoyuki. Japan. All rights reserved.
+Copyright (C) 2001-2002, SADAHIRO Tomoyuki. Japan. All rights reserved.

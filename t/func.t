@@ -59,13 +59,13 @@ print $Collator->cmp("あいうえお", "アイウエオ") == -1
    && $mod->new( level => 3 )->cmp("あいうえお", "アイウエオ") == 0
    && $mod->new( katakana_before_hiragana => 1 )
           ->cmp("あいうえお", "アイウエオ") == 1
-   && $mod->new( katakana_before_hiragana => 1, 
+   && $mod->new( katakana_before_hiragana => 1,
             level => 3 )->cmp("あいうえお", "アイウエオ") == 0
    && $Collator->cmp("perl", "PERL") == -1
    && $mod->new( level => 2 )->cmp("perl", "PERL") == 0
    && $mod->new( upper_before_lower => 1 )
           ->cmp("perl", "PERL") == 1
-   && $mod->new( upper_before_lower => 1, 
+   && $mod->new( upper_before_lower => 1,
             level => 2 )->cmp("perl", "PERL") == 0
 
     ? "ok 6\n" : "not ok 6\n";
@@ -79,7 +79,7 @@ print $Collator->cmp("XYZ", "abc") == 1
     ? "ok 8\n" : "not ok 8\n";
 
 print $Collator->cmp("XYZ", "ABC") == 1
-   && $Collator->cmp("xyz", "ABC") == 1 
+   && $Collator->cmp("xyz", "ABC") == 1
     ? "ok 9\n" : "not ok 9\n";
 
 print $Collator->gt("ああ", "あゝ")
@@ -159,7 +159,7 @@ print $Collator->cmp('Ａ', '亜') == -1
   $sorted  = 'パイナップル ハット はな バーナー バナナ パール パロディ';
   @subject = qw(パロディ パイナップル バナナ ハット はな パール バーナー);
 
-  print 
+  print
       $sorted eq join(' ', $ignore_prolong->sort(@subject))
    && $sorted eq join(' ', $delete_prolong->sort(@subject))
    && $level2->cmp("パアル", "パール") == 0

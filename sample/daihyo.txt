@@ -38,7 +38,8 @@ use ShiftJIS::CP932::MapUTF;
 $touni = sub { unpack('v', cp932_to_utf16(shift)) };
 
 @sort = ShiftJIS::Collate->new(
-    kanji => 3, tounicode => $touni 
+    kanji => 3, tounicode => $touni
   )->sortDaihyo(reverse @data);
 
 print "@$_\n" foreach @sort;
+

@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use vars qw($VERSION $PACKAGE @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 $PACKAGE = 'ShiftJIS::Collate'; # __PACKAGE__
 
@@ -12,29 +12,29 @@ my $Level = 4;
 my $Kanji = 2;
 
 sub new {
-  my $class = shift;
-  my $self  = bless { @_ }, $class;
+    my $class = shift;
+    my $self  = bless { @_ }, $class;
 
-  $self->{level} ||= $Level;
-  $self->{kanji} ||= $Kanji;
+    $self->{level} ||= $Level;
+    $self->{kanji} ||= $Kanji;
 
-  if ($self->{kanji} == 3) {
-    croak qq|$PACKAGE "tounicode" coderef is not defined|
-      unless $self->{tounicode} && ref($self->{tounicode}) eq 'CODE';
-  }
-  if (exists $self->{overrideCJK}) {
-    croak qq|$PACKAGE : Sorry, "overrideCJK" is obsolete.|;
-  }
-  return $self;
+    if ($self->{kanji} == 3) {
+	croak qq|$PACKAGE "tounicode" coderef is not defined|
+	    unless $self->{tounicode} && ref($self->{tounicode}) eq 'CODE';
+    }
+    if (exists $self->{overrideCJK}) {
+	croak qq|$PACKAGE : Sorry, "overrideCJK" is obsolete.|;
+    }
+    return $self;
 }
 
 
 my $Char = '[\xB3\xB6-\xC4]\xDE|[\xCA-\xCE][\xDE\xDF]|'
- . '[\x00-\x7F\xA1-\xDF]|[\x81-\x9F\xE0-\xFC][\x40-\x7E\x80-\xFC]';
+    . '[\x00-\x7F\xA1-\xDF]|[\x81-\x9F\xE0-\xFC][\x40-\x7E\x80-\xFC]';
 
 my $CJK = '\x88[\x9F-\xFC]|\x98[\x40-\x72\x9F-\xFC]|'
- . '[\x89-\x97\x99-\x9F\xE0-\xE9][\x40-\x7E\x80-\xFC]|'
- . '\xEA[\x40-\x7E\x80-\xA4]';
+    . '[\x89-\x97\x99-\x9F\xE0-\xE9][\x40-\x7E\x80-\xFC]|'
+    . '\xEA[\x40-\x7E\x80-\xA4]';
 
 
 #
@@ -751,123 +751,119 @@ q|"| => "\x72\x46\x32\x14\x0a\x01",#added
 sub _getOrder { wantarray ? %Order : \%Order }
 
 sub _getClass($) {
-  my $w = ord shift; # weight
-  return
-    $w <  0x70 ?  0 : # ignorable
-    $w == 0x70 ?  1 : # space
-    $w == 0x71 ?  2 : # kijutsu kigou   : descriptive symbols
-    $w == 0x72 ?  3 : # kakko kigou     : quotes and parentheses
-    $w == 0x73 ?  4 : # gakujutsu kigou : math. operators and sci. symbols
-    $w == 0x74 ?  5 : # ippan kigou     : general symbols
-    $w == 0x75 ?  6 : # unit symbols
-    $w == 0x76 ?  7 : # arabic digits
-    $w == 0x77 ?  8 : # ooji kigou      : Greek and Cyrillic alphabets 
-    $w == 0x78 ?  9 : # Latin alphabets
-    $w == 0x79 ? 10 : # kana
-    $w <= 0xfc ? 11 : # kanji
-                 12 ; # geta
+    my $w = ord shift; # weight
+    return
+	$w <  0x70 ?  0 : # ignorable
+	$w == 0x70 ?  1 : # space
+	$w == 0x71 ?  2 : # kijutsu kigou   : descriptive symbols
+	$w == 0x72 ?  3 : # kakko kigou     : quotes and parentheses
+	$w == 0x73 ?  4 : # gakujutsu kigou : math. operators and sci. symbols
+	$w == 0x74 ?  5 : # ippan kigou     : general symbols
+	$w == 0x75 ?  6 : # unit symbols
+	$w == 0x76 ?  7 : # arabic digits
+	$w == 0x77 ?  8 : # ooji kigou      : Greek and Cyrillic alphabets
+	$w == 0x78 ?  9 : # Latin alphabets
+	$w == 0x79 ? 10 : # kana
+	$w <= 0xfc ? 11 : # kanji
+	             12 ; # geta
 }
 
 my %Replaced;
 my @Replaced = qw( Å[  ∞  ÅT  ÅR  ÅU  ÅS );
 @Replaced{@Replaced} = (1) x @Replaced;
 
-sub _hasDakuHiragana($) {
-  $_[0] =~ /^\x79[\x51-\x55\x61-\x65\x71-\x75\x91-\x95]/;
+sub _replaced($$) {
+    my $c = shift; # current element
+    my $p = unpack('n', shift);
+      # weight at the 1st level of the previous element
+    return unless 0x7941 <= $p && $p <= 0x79d6;
+
+    my $d = $p % 16; # dan : a-i-u-e-o or others
+    my $n = pack('n', $p);
+    return
+	$c eq 'Å['
+	    ? "\x79".chr($d == 6 ? 0xd6 : 0x40 + $d)."\x34\x1a\x11\x03" :
+	$c eq '∞'
+	    ? "\x79".chr($d == 6 ? 0xd6 : 0x40 + $d)."\x34\x1a\x11\x04" :
+	$c eq 'ÅT'
+	    ? "$n\x34\x1c\x10\x03" :
+	$c eq 'ÅR'
+	    ? "$n\x34\x1c\x11\x03" :
+	$c eq 'ÅU' && # has Daku Hiragana
+		 $n =~ /^\x79[\x51-\x55\x61-\x65\x71-\x75\x91-\x95]/
+	    ? "$n\x35\x1c\x10\x03" :
+	$c eq 'ÅS' && # has Daku Katakana
+		 $n =~ /^\x79[\x43\x51-\x55\x61-\x65\x71-\x75\x91-\x95]/
+	    ? "$n\x35\x1c\x11\x03" :
+	    undef;
 }
 
-sub _hasDakuKatakana($) {
-  $_[0] =~ /^\x79[\x43\x51-\x55\x61-\x65\x71-\x75\x91-\x95]/;
+sub _length {
+    my $str = shift;
+    0 + $str =~ s/[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[\x00-\xFF]//g;
 }
 
-sub _replaced($$)
-{
-  my $c = shift; # current element
-  my $p = unpack('n', shift); # weight at the 1st level of the previous element
-  return unless 0x7941 <= $p && $p <= 0x79d6;
-
-  my $d = $p % 16; # dan : a-i-u-e-o or others
-  my $n = pack('n', $p);
-  return 
-    $c eq 'Å[' ? "\x79".chr($d == 6 ? 0xd6 : 0x40 + $d)."\x34\x1a\x11\x03" :
-    $c eq '∞'  ? "\x79".chr($d == 6 ? 0xd6 : 0x40 + $d)."\x34\x1a\x11\x04" :
-    $c eq 'ÅT'                         ? "$n\x34\x1c\x10\x03" :
-    $c eq 'ÅR'                         ? "$n\x34\x1c\x11\x03" :
-    $c eq 'ÅU' && _hasDakuHiragana($n) ? "$n\x35\x1c\x10\x03" :
-    $c eq 'ÅS' && _hasDakuKatakana($n) ? "$n\x35\x1c\x11\x03" :
-    undef;
+sub getWtCJK {
+    my $self = shift;
+    my $c    = shift;
+    if ($self->{kanji} == 3) {
+	my $u = &{ $self->{tounicode} }($c);
+	croak "A passed codepoint of kanji is outside CJK Unified Ideographs"
+	    unless 0x4E00 <= $u && $u <= 0x9FFF;
+	my $d = $u - 0x4E00;
+	chr(int($d / 192) + 0x80).chr($d % 192 + 0x40)."\x32\x14\x0a\x01";
+    } else {
+	"$c\x32\x14\x0a\x01";
+    }
 }
 
-sub _length{
-  my $str = shift;
-  0 + $str =~ s/[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[\x00-\xFF]//g;
+sub getWt {
+    my $self = shift;
+    my $str  = $self->{preprocess} ? &{ $self->{preprocess} }(shift) : shift;
+    my $kan  = $self->{kanji};
+    my $ign  = $self->{ignoreChar};
+
+    if ($str !~ m/^(?:$Char)*$/o) {
+	carp $PACKAGE . " Malformed Shift_JIS character";
+    }
+
+    my($c, @buf);
+    foreach $c ($str =~ m/$Char/go) {
+	next unless $Order{$c} || $kan > 1 && $c =~ /^$CJK$/o;
+	next if defined $ign && $c =~ /$ign/;
+
+	my $replaced;
+	$replaced = _replaced($c, $buf[-1]) if $Replaced{$c} && @buf;
+
+	push @buf,
+	    $replaced  ? $replaced  :
+	    $Order{$c} ? $Order{$c} :
+	    $kan > 1   ? $self->getWtCJK($c) : ();
+    }
+    return wantarray ? @buf : join('', @buf);
 }
 
-sub getWtCJK
-{
-  my $self = shift;
-  my $c    = shift;
-  if($self->{kanji} == 3) {
-    my $u = &{ $self->{tounicode} }($c);
-    croak "A passed codepoint of kanji is outside CJK Unified Ideographs"
-	unless 0x4E00 <= $u && $u <= 0x9FFF;
-    my $d = $u - 0x4E00;
-    chr(int($d / 192) + 0x80).chr($d % 192 + 0x40)."\x32\x14\x0a\x01";
-  } else {
-    "$c\x32\x14\x0a\x01";
-  }
-}
+sub getSortKey {
+    my $self = shift;
+    my $wt   = $self->getWt(shift);
+    my $lev  = $self->{level};
+    my @ret;
 
+    ($ret[0] = $wt) =~ tr/\x40-\xff//cd if 0 < $lev;
+    ($ret[1] = $wt) =~ tr/\x32-\x36//cd if 1 < $lev;
+    ($ret[2] = $wt) =~ tr/\x14-\x1d//cd if 2 < $lev;
+    ($ret[3] = $wt) =~ tr/\x0a-\x11//cd if 3 < $lev;
+    ($ret[4] = $wt) =~ tr/\x01-\x05//cd if 4 < $lev;
 
-sub getWt
-{
-  my $self = shift;
-  my $str  = $self->{preprocess} ? &{ $self->{preprocess} }(shift) : shift;
-  my $kan  = $self->{kanji};
-  my $ign  = $self->{ignoreChar};
-
-  if($str !~ m/^(?:$Char)*$/o){
-    carp $PACKAGE . " Malformed Shift_JIS character";
-  }
-
-  my($c, @buf);
-  for $c ($str =~ m/$Char/go){
-    next unless $Order{$c} || $kan > 1 && $c =~ /^$CJK$/o;
-    next if defined $ign && $c =~ /$ign/;
-
-    my $replaced;
-    $replaced = _replaced($c, $buf[-1]) if $Replaced{$c} && @buf;
-
-    push @buf,
-      $replaced  ? $replaced  :
-      $Order{$c} ? $Order{$c} :
-      $kan > 1   ? $self->getWtCJK($c) : ();
-  }
-  return wantarray ? @buf : join('', @buf);
-}
-
-sub getSortKey
-{
-  my $self = shift;
-  my $wt   = $self->getWt(shift);
-  my $lev  = $self->{level};
-  my @ret;
-
-  ($ret[0] = $wt) =~ tr/\x40-\xff//cd if 0 < $lev;
-  ($ret[1] = $wt) =~ tr/\x32-\x36//cd if 1 < $lev;
-  ($ret[2] = $wt) =~ tr/\x14-\x1d//cd if 2 < $lev;
-  ($ret[3] = $wt) =~ tr/\x0a-\x11//cd if 3 < $lev;
-  ($ret[4] = $wt) =~ tr/\x01-\x05//cd if 4 < $lev;
-
-  # 3rd level
-  $ret[2] =~ tr/\x15\x16/\x16\x15/
+    # 3rd level
+    $ret[2] =~ tr/\x15\x16/\x16\x15/
 	if 2 < $lev && $self->{upper_before_lower};
 
-  # 4th level
-  $ret[3] =~ tr/\x10\x11/\x11\x10/
+    # 4th level
+    $ret[3] =~ tr/\x10\x11/\x11\x10/
 	if 3 < $lev && $self->{katakana_before_hiragana};
 
-  join "\0\0", @ret[0..$lev-1];
+    join "\0\0", @ret[0..$lev-1];
 }
 
 sub cmp { $_[0]->getSortKey($_[1]) cmp $_[0]->getSortKey($_[2]) }
@@ -879,112 +875,111 @@ sub lt  { $_[0]->getSortKey($_[1]) lt  $_[0]->getSortKey($_[2]) }
 sub le  { $_[0]->getSortKey($_[1]) le  $_[0]->getSortKey($_[2]) }
 
 sub sort {
-  my $obj = shift;
-  my(%hyoki);
-  for(@_){
-    $hyoki{$_} = $obj->getSortKey($_);
-  }
-  sort{ $hyoki{$a} cmp $hyoki{$b} } @_;
+    my $obj = shift;
+    my(%hyoki);
+    foreach (@_) {
+	$hyoki{$_} = $obj->getSortKey($_);
+    }
+    return sort{ $hyoki{$a} cmp $hyoki{$b} } @_;
 }
 
 sub sortYomi {
-  my $obj = shift;
-  my (%hyoki, %yomi);
-  my @str = @_;
-  for(@str){
-    $hyoki{ $_->[0] } = $obj->getSortKey($_->[0]);
-    $yomi{  $_->[1] } = $obj->getSortKey($_->[1]);
-  }
+    my $obj = shift;
+    my (%hyoki, %yomi);
+    my @str = @_;
+    foreach (@str) {
+	$hyoki{ $_->[0] } = $obj->getSortKey($_->[0]);
+	$yomi{  $_->[1] } = $obj->getSortKey($_->[1]);
+    }
 
-  sort{ $yomi{  $a->[1] } cmp $yomi{  $b->[1] }
-     || $hyoki{ $a->[0] } cmp $hyoki{ $b->[0] } 
-     } @str;
+    return sort {
+	    $yomi{ $a->[1] } cmp $yomi{ $b->[1] }
+	 || $hyoki{ $a->[0] } cmp $hyoki{ $b->[0] }
+	} @str;
 }
 
 sub sortDaihyo {
-  my $obj = shift;
-  my (%class, %hyoki, %yomi, %daihyo, %kashira);
-  my @str = @_;
-  for(@str){
-    $hyoki{   $_->[0] } = $obj->getSortKey(  $_->[0] ); # string
-    $yomi{    $_->[1] } = $obj->getSortKey(  $_->[1] ); # string
-    $daihyo{  $_->[1] } = unpack('n', $yomi{ $_->[1]}); # number
-    $kashira{ $_->[0] } = unpack('n', $hyoki{$_->[0]}); # number
-    $class{   $_->[0] } = _getClass( $hyoki{$_->[0]} ); # number
-  }
+    my $obj = shift;
+    my (%class, %hyoki, %yomi, %daihyo, %kashira);
+    my @str = @_;
+    foreach (@str) {
+	$hyoki{   $_->[0] } = $obj->getSortKey(  $_->[0] ); # string
+	$yomi{    $_->[1] } = $obj->getSortKey(  $_->[1] ); # string
+	$daihyo{  $_->[1] } = unpack('n', $yomi{ $_->[1]}); # number
+	$kashira{ $_->[0] } = unpack('n', $hyoki{$_->[0]}); # number
+	$class{   $_->[0] } = _getClass( $hyoki{$_->[0]} ); # number
+    }
 
-  sort{ $class{  $a->[0] } <=> $class{  $b->[0] }
-     || $daihyo{ $a->[1] } <=> $daihyo{ $b->[1] }
-     || $kashira{$a->[0] } <=> $kashira{$b->[0] }
-     || $yomi{   $a->[1] } cmp $yomi{   $b->[1] }
-     || $hyoki{  $a->[0] } cmp $hyoki{  $b->[0] }
-  } @str;
+    sort{ $class{  $a->[0] } <=> $class{  $b->[0] }
+	|| $daihyo{ $a->[1] } <=> $daihyo{ $b->[1] }
+	|| $kashira{$a->[0] } <=> $kashira{$b->[0] }
+	|| $yomi{   $a->[1] } cmp $yomi{   $b->[1] }
+	|| $hyoki{  $a->[0] } cmp $hyoki{  $b->[0] }
+    } @str;
 }
 
 ##
 ## int = index(string, substring)
 ##
-sub index
-{
-  my $self = shift;
-  my $str  = $self->{preprocess} ? &{ $self->{preprocess} }(shift) : shift;
-  my $sub  = shift;
-  my $byte = $self->{position_in_bytes};
-  my $kan  = $self->{kanji};
-  my $ign  = $self->{ignoreChar};
-  my $lev  = $self->{level};
+sub index {
+    my $self = shift;
+    my $str  = $self->{preprocess} ? &{ $self->{preprocess} }(shift) : shift;
+    my $sub  = shift;
+    my $byte = $self->{position_in_bytes};
+    my $kan  = $self->{kanji};
+    my $ign  = $self->{ignoreChar};
+    my $lev  = $self->{level};
 
-  my @subWt = $self->getWt($sub);
-  return wantarray ? (0,0) : 0 if ! @subWt;
-  return wantarray ?  ()  : -1 if $str eq '';
+    my @subWt = $self->getWt($sub);
+    return wantarray ? (0,0) : 0 if ! @subWt;
+    return wantarray ?  ()  : -1 if $str eq '';
 
-  if($str !~ m/^(?:$Char)*$/o){
-    carp $PACKAGE . " Malformed Shift_JIS character";
-  }
-
-  my $count = 0;
-  my($c, $prev, @strWt, @strPt);
-  for $c ($str =~ m/$Char/go){
-    my $cur;
-    next if defined $ign && $c =~ /$ign/;
-    if($Order{$c} || $kan > 1 && $c =~ /^$CJK$/o){
-      $cur   = _replaced($c, $strWt[-1]) if $Replaced{$c} && @strWt;
-      $cur ||= $Order{$c} ? $Order{$c} :
-               $kan > 1   ? $self->getWtCJK($c) : undef;
+    if ($str !~ m/^(?:$Char)*$/o) {
+	carp $PACKAGE . " Malformed Shift_JIS character";
     }
 
-    if($cur){
-      push @strWt, $cur;
-      push @strPt, $count; 
-    }
-    $count += $byte ? length($c) : _length($c);
+    my $count = 0;
+    my($c, $prev, @strWt, @strPt);
+    foreach $c ($str =~ m/$Char/go) {
+	my $cur;
+	next if defined $ign && $c =~ /$ign/;
+	if ($Order{$c} || $kan > 1 && $c =~ /^$CJK$/o) {
+	    $cur   = _replaced($c, $strWt[-1]) if $Replaced{$c} && @strWt;
+	    $cur ||= $Order{$c} ? $Order{$c} :
+	    $kan > 1   ? $self->getWtCJK($c) : undef;
+	}
 
-    while(@strWt >= @subWt){
-      if(_eqArray(\@strWt, \@subWt, $lev)){
-        my $pos = $strPt[0];
-        return wantarray ? ($pos, $count-$pos) : $pos;
-      }
-      shift @strWt;
-      shift @strPt;
+	if ($cur) {
+	    push @strWt, $cur;
+	    push @strPt, $count;
+	}
+	$count += $byte ? length($c) : _length($c);
+
+	while (@strWt >= @subWt) {
+	    if (_eqArray(\@strWt, \@subWt, $lev)) {
+		my $pos = $strPt[0];
+		return wantarray ? ($pos, $count-$pos) : $pos;
+	    }
+	    shift @strWt;
+	    shift @strPt;
+	}
     }
-  }
-  return wantarray ? () : -1;
+    return wantarray ? () : -1;
 }
 
 ##
 ## bool _eqArray(arrayref, arrayref, level)
 ##
-sub _eqArray($$$)
-{
-  my $a   = shift; # length $a >= length $b;
-  my $b   = shift;
-  my $len = 1 + shift; # 1 + level
+sub _eqArray($$$) {
+    my $a   = shift; # length $a >= length $b;
+    my $b   = shift;
+    my $len = 1 + shift; # 1 + level
 
-  my($c);
-  for $c (0..@$b-1){
-    return if substr($a->[$c], 0, $len) ne substr($b->[$c], 0, $len);
-  }
-  return 1;
+    my($c);
+    foreach $c (0..@$b-1) {
+	return if substr($a->[$c], 0, $len) ne substr($b->[$c], 0, $len);
+    }
+    return 1;
 }
 
 1;
@@ -993,7 +988,7 @@ __END__
 
 =head1 NAME
 
-ShiftJIS::Collate - collation of ShiftJIS strings
+ShiftJIS::Collate - collation of Shift_JIS strings
 
 =head1 SYNOPSIS
 
@@ -1001,11 +996,19 @@ ShiftJIS::Collate - collation of ShiftJIS strings
 
   @sorted = ShiftJIS::Collate->new(%tailoring)->sort(@not_sorted);
 
+=head1 ABOUT THIS POD
+
+This POD is written in Shift_JIS.
+
+Do you see 'C<Ç†>' as C<HIRAGANA LETTER A>?
+or 'C<\>' as C<YEN SIGN>, not as C<REVERSE SOLIDUS>?
+Otherwise you'd change your font to an appropriate one.
+(or the POD might be badly converted.)
+
 =head1 DESCRIPTION
 
 This module provides some functions to compare and sort strings
-in the ShiftJIS encoding
-using the collation of Japanese character strings.
+in Shift_JIS based on the collation of Japanese character strings.
 
 This module is an implementation of B<JIS X 4061:1996> and
 the collation rules are based on that standard.
@@ -1032,7 +1035,7 @@ The C<new> method returns a collator object.
 
 =item ignoreChar
 
-If specified as a regex,
+If specified as a regular expression,
 any characters that match it are ignored on collation.
 
 e.g. If you want to ignore KATAKANA PROLONGED SOUND MARK
@@ -1061,7 +1064,7 @@ since the repertory Shift_JIS does not define
 all the Unicode CJK unified ideographs.
 
 But if the kanji class 3 is specified, you can collate kanji
-in the unicode order. In this case you must provide 
+in the unicode order. In this case you must provide
 L<tounicode> coderef which gives a unicode codepoint
 from a Shift_JIS character.
 
@@ -1077,7 +1080,7 @@ Any higher levels than the specified one are ignored.
   Level 5: width ordering
 
 The collation level is specified as a number
- between 1 and 5. If omitted, level 4 is applied.
+between 1 and 5. If omitted, level 4 is applied.
 
 =item tounicode
 
@@ -1197,7 +1200,7 @@ e.g. you say
   my $str = "* Ç–ÇÁÇ™Ç»Ç∆ÉJÉ^ÉJÉiÇÕÉåÉxÉãÇRÇ≈ÇÕìôÇµÇ¢Ç©Ç»ÅB";
   my $sub = "Ç©Ç»";
   my $match;
-  if(my @tmp = $Col->index($str, $sub)){
+  if (my @tmp = $Col->index($str, $sub)) {
     $match = substr($str, $tmp[0], $tmp[1]);
   }
 
@@ -1206,7 +1209,7 @@ if C<$level> is 2 or 3, you get C<"ÉJÉi">;
 if C<$level> is 4 or 5, you get C<"Ç©Ç»">.
 
 If your C<substr> function is not oriented to Shift_JIS,
-specify true as C<position_in_bytes>. See L<Constructor and Tailoring>. 
+specify true as C<position_in_bytes>. See L<Constructor and Tailoring>.
 
 =back
 
@@ -1233,7 +1236,7 @@ In the class, alphabets are collated alphabetically;
 kana letters are AIUEO-betically (in the Gozyuon order);
 kanji are in the JIS X 0208 order.
 
-Characters that do not belong to any character class are 
+Characters that do not belong to any character class are
 ignored and skipped for collation.
 
 =item Level 2: diacritic ordering.
@@ -1261,11 +1264,11 @@ Any hiragana is lesser than the corresponding katakana.
 
 =item Level 5: width ordering.
 
-A character that belongs to the block 
+A character that belongs to the block
 C<Halfwidth and Fullwidth Forms>
 is greater than the corresponding normal character.
 
-B<BN:> According to the JIS standard, the level 5 should be ignored.
+B<BN:> JIS does not mention this level. Extenstion by this module.
 
 =back
 
@@ -1283,30 +1286,25 @@ Any kanji except U+4EDD are ignored on collation.
 
 =item Class 2: the 'kihon' (basic) kanji class
 
-It comprises JIS level 1 and 2 kanji in addition to 
+It comprises JIS level 1 and 2 kanji in addition to
 the minimal kanji class. Sorted in the JIS codepoint order.
 Any kanji excepting those defined by JIS X 0208 are ignored on collation.
 
 =item Class 3: the 'kakucho' (extended) kanji class
 
-All the CJK Unified Ideographs in addition to 
+All the CJK Unified Ideographs in addition to
 the minimal kanji class. Sorted in the Unicode codepoint order.
 
 =back
 
-
 =head2 Replacement of PROLONGED SOUND MARK and ITERATION MARKs
 
-        RFC1345  UCS
-	[*5]    U+309D  HIRAGANA ITERATION MARK
-	[+5]    U+309E  HIRAGANA VOICED ITERATION MARK
-	[-6]    U+30FC  KATAKANA-HIRAGANA PROLONGED SOUND MARK
-	[*6]    U+30FD  KATAKANA ITERATION MARK
-	[+6]    U+30FE  KATAKANA VOICED ITERATION MARK
-
-To represent Japanese characters,
-RFC 1345 Mnemonic characters enclosed by brackets
-are used below.
+        Character    UCS
+	  'ÅT'    U+309D  HIRAGANA ITERATION MARK
+	  'ÅU'    U+309E  HIRAGANA VOICED ITERATION MARK
+	  'Å['    U+30FC  KATAKANA-HIRAGANA PROLONGED SOUND MARK
+	  'ÅR'    U+30FD  KATAKANA ITERATION MARK
+	  'ÅS'    U+30FE  KATAKANA VOICED ITERATION MARK
 
 These characters, if replaced, are secondary equal to
 the replacing kana, while ternary not equal to.
@@ -1318,58 +1316,63 @@ the replacing kana, while ternary not equal to.
 The PROLONGED MARK is repleced to a normal vowel or nasal
 katakana corresponding to the preceding kana if exists.
 
-  eg.	[Ka][-6] to [Ka][A6]
-	[bi][-6] to [bi][I6]
-	[Pi][YU][-6] to [Pi][YU][U6]
-	[N6][-6] to [N6][N6]
+  eg.	'ÉJÅ['   to 'ÉJÉA'
+	'Ç—Å['   to 'Ç—ÉC'
+	'Ç´Ç·Å[' to 'Ç´Ç·ÉA'
+	'ÉsÉÖÅ[' to 'ÉsÉÖÉE'
+	'ÉìÅ['   to 'ÉìÉì'
 
 =item HIRAGANA- and KATAKANA ITERATION MARKs
 
-The ITERATION MARKs (VOICELESS) are repleced 
+The ITERATION MARKs (VOICELESS) are repleced
 to a normal kana corresponding to the preceding kana if exists.
 
-  eg.	[Ka][*6] to [Ka][Ka]
-	[Do][*5] to [Do][to]
-	[n5][*5] to [n5][n5]
-	[Pu][*6] to [Pu][Hu]
-	[Pi][YU][*6] to [Pi][YU][Yu]
+  eg.	'Ç©ÅT'   to 'Ç©Ç©'
+	'ÉhÅT'   to 'ÉhÇ∆'
+	'ÇÒÅT'   to 'ÇÒÇÒ'
+	'ÉJÅR'   to 'ÉJÉJ'
+	'ÇŒÅR'   to 'ÇŒÉn'
+	'ÉvÅR'   to 'ÉvÉt'
+	'ÉîÉBÅR' to 'ÉîÉBÉC'
+	'ÉsÉÖÅT' to 'ÉsÉÖÇ‰'
 
 =item HIRAGANA- and KATAKANA VOICED ITERATION MARKs
 
 The VOICED ITERATION MARKs are repleced to a voiced kana
 corresponding to the preceding kana if exists.
 
-  eg.	[ha][+5] to [ha][ba]
-	[Pu][+5] to [Pu][bu]
-	[Ko][+6] to [Ko][Go]
-	[U6][+6] to [U6][Vu]
+  eg.	'ÇÕÅU'   to 'ÇÕÇŒ'
+	'ÉvÅU'   to 'ÉvÇ‘'
+	'ÉvÅS'   to 'ÉvÉu'
+	'Ç±ÅS'   to 'Ç±ÉS'
+	'ÉEÅS'   to 'ÉEÉî'
 
 =item Cases of no replacement
 
-Otherwise, no replacement occurs. Especially in the 
+Otherwise, no replacement occurs. Especially in the
 cases when these marks follow any character except kana.
 
 The unreplaced characters are primary greater than any kana.
 
   eg.	CJK Ideograph followed by PROLONGED SOUND MARK
 	Digit followed by ITERATION MARK
-	[A6][+6] ([A6] has no voiced variant)
+	'ÉAÅS' ('ÉA' has no voiced variant)
 
 =item Example
 
-For example, the Japanese string C<[Pa][-6][Ru]> (C<Perl> in kana)
-has three collation elements: C<KATAKANA PA>, 
+For example, the Japanese string C<'ÉpÅ[Éã'> (C<Perl> in kana)
+has three collation elements: C<KATAKANA PA>,
 C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
 
-   [Pa][-6][Ru] is converted to [Pa][A6][Ru] by replacement.
-		primary equal to [ha][a5][ru].
-		secondary equal to [pa][a5][ru], greater than [ha][a5][ru].
-		tertiary equal to [pa][-6][ru], lesser than [Pa][A6][Ru].
-		quartenary greater than [pa][-6][ru].
+	'ÉpÅ[Éã' is converted to 'ÉpÉAÉã' by replacement.
+		primary equal to 'ÇÕÇ†ÇÈ'.
+		secondary equal to 'ÇœÇ†ÇÈ', greater than 'ÇÕÇ†ÇÈ'.
+		tertiary equal to 'ÇœÅ[ÇÈ', lesser than 'ÉpÉAÉã'.
+		quartenary greater than 'ÇœÅ[ÇÈ'.
 
 =back
 
-=head2 Conformance on the Standard
+=head2 Conformance to the Standard
 
     [cf. the article 6.2, JIS X 4061]
 
@@ -1394,7 +1397,7 @@ C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
   (5) Collation of Latin alphabets with macron and with circumflex
       is not supported.
 
-  (6) L<Kanji Classes>:
+  (6) Kanji Classes:
        the minimal kanji class (Five kanji-like chars).
        the basic kanji class (Levels 1 and 2 kanji, JIS)..
 
@@ -1402,11 +1405,12 @@ C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
 
 Tomoyuki SADAHIRO
 
-  bqw10602@nifty.com
-  http://homepage1.nifty.com/nomenclator/perl/
+Copyright (C) 2001-2002. All rights reserved.
 
- This program is free software; you can redistribute it and/or 
- modify it under the same terms as Perl itself.
+bqw10602@nifty.com  http://homepage1.nifty.com/nomenclator/perl/
+
+This module is free software; you can redistribute it
+and/or modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
@@ -1429,10 +1433,6 @@ This is a translation of ISO/IEC 10646-1.
 
 =item *
 
-RFC 1345 [Character Mnemonics & Character Sets]
-
-=item *
-
 L<ShiftJIS::String>
 
 =item *
@@ -1442,4 +1442,3 @@ L<ShiftJIS::Regexp>
 =back
 
 =cut
-

@@ -7,7 +7,7 @@ use strict;
 use vars qw($loaded);
 $^W = 1;
 
-BEGIN { $| = 1; print "1..11\n"; }
+BEGIN { $| = 1; print "1..15\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use ShiftJIS::Collate;
 $loaded = 1;
@@ -15,86 +15,110 @@ print "ok 1\n";
 
 ######################### End of black magic.
 
-my $mod = "ShiftJIS::Collate";
+my ($mod, $k, $kstr, $match, @tmp, @pos);
+$mod = "ShiftJIS::Collate";
+$kstr = "* ひらがな  とカタカナはレベル３では等しいかな。";
+$k = "かな";
 
-my $str = "* ひらがな  とカタカナはレベル３では等しいかな。";
-my $sub = "かな";
-my $match;
+@pos = (position_in_bytes => 1);
 
-my @tmp;
-my @pos = (position_in_bytes => 1);
-
-if(@tmp = $mod->new(@pos, level => 1)->index($str, $sub))
-{
-  $match = substr($str, $tmp[0], $tmp[1]);
+if (@tmp = $mod->new(@pos, level => 1)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
 }
 print $match eq 'がな' ? "ok" : "not ok", " 2\n";
 
-if(@tmp = $mod->new(@pos, level => 2)->index($str, $sub))
-{
-  $match = substr($str, $tmp[0], $tmp[1]);
+if (@tmp = $mod->new(@pos, level => 2)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
 }
-print $match eq 'カナ' ? "ok" : "not ok", " 3\n";
+  print $match eq 'カナ' ? "ok" : "not ok", " 3\n";
 
-if(@tmp = $mod->new(@pos, level => 3)->index($str, $sub))
-{
-  $match = substr($str, $tmp[0], $tmp[1]);
+if (@tmp = $mod->new(@pos, level => 3)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
 }
 print $match eq 'カナ' ? "ok" : "not ok", " 4\n";
 
-if(@tmp = $mod->new(@pos, level => 4)->index($str, $sub))
-{
-  $match = substr($str, $tmp[0], $tmp[1]);
+if (@tmp = $mod->new(@pos, level => 4)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
 }
 print $match eq 'かな' ? "ok" : "not ok", " 5\n";
 
-if(@tmp = $mod->new(@pos, level => 5)->index($str, $sub))
-{
-  $match = substr($str, $tmp[0], $tmp[1]);
+if (@tmp = $mod->new(@pos, level => 5)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
 }
 print $match eq 'かな' ? "ok" : "not ok", " 6\n";
 
-$str = "* ひらｶﾞな  とカタカナはレベル３では等しいかな。";
-$sub = "かな";
+$kstr = "* ひらｶﾞな  とカタカナはレベル３では等しいかな。";
+$k = "かな";
 
-if(@tmp = $mod->new(@pos, level => 1)->index($str, $sub))
-{
-  $match = substr($str, $tmp[0], $tmp[1]);
+if (@tmp = $mod->new(@pos, level => 1)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
 }
 print $match eq 'ｶﾞな' ? "ok" : "not ok", " 7\n";
 
-$str = "* ひらがなとカタカナはレベル３では等しいかな。";
-$sub = "ｶﾞﾅ";
+$kstr = "* ひらがなとカタカナはレベル３では等しいかな。";
+$k = "ｶﾞﾅ";
 
-if(@tmp = $mod->new(@pos, level => 1)->index($str, $sub))
-{
-  $match = substr($str, $tmp[0], $tmp[1]);
+if (@tmp = $mod->new(@pos, level => 1)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
 }
 print $match eq 'がな' ? "ok" : "not ok", " 8\n";
 
-$str = "* ひらがなとカタカナはレベル３では等しいかな。";
-$sub = "ｶﾞﾅ";
+$kstr = "* ひらがなとカタカナはレベル３では等しいかな。";
+$k = "ｶﾞﾅ";
 
 $match = undef;
-if(@tmp = $mod->new(@pos, level => 4)->index($str, $sub))
-{
-  $match = substr($str, $tmp[0], $tmp[1]);
+if (@tmp = $mod->new(@pos, level => 4)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
 }
 print ! defined $match ? "ok" : "not ok", " 9\n";
 
-$str = 'パールプログラミング';
-$sub = 'アルふ';
+$kstr = 'パールプログラミング';
+$k = 'アルふ';
 
 $match = undef;
-if(@tmp = $mod->new(@pos, level => 1)->index($str, $sub))
-{
-  $match = substr($str, $tmp[0], $tmp[1]);
+if (@tmp = $mod->new(@pos, level => 1)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
 }
 print $match eq 'ールプ' ? "ok" : "not ok", " 10\n";
 
 $match = undef;
-if(@tmp = $mod->new(@pos, level => 3)->index($str, $sub))
-{
-  $match = substr($str, $tmp[0], $tmp[1]);
+if (@tmp = $mod->new(@pos, level => 3)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
 }
 print ! defined $match ? "ok" : "not ok", " 11\n";
+
+$kstr = 'ﾊﾟｰﾙﾌﾟﾛｸﾞﾗﾐﾝｸﾞ'; # 'ｸﾞ' is a single grapheme.
+$k = 'ﾌﾟﾛｸ';
+
+$match = undef;
+if (@tmp = $mod->new(@pos, level => 1)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
+}
+print $match eq 'ﾌﾟﾛｸﾞ' ? "ok" : "not ok", " 12\n";
+
+$match = undef;
+if (@tmp = $mod->new(@pos, level => 2)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
+}
+print ! defined $match ? "ok" : "not ok", " 13\n";
+
+
+$kstr = 'ﾊﾟｰﾙﾌﾟﾛｸﾞﾗﾐﾝｸﾞ';
+$k = 'ﾟﾛｸ';
+# 'ﾟ' is treated as a grapheme only when it can't combin with preceding kana.
+# but it's ignorable.
+
+$match = undef;
+if (@tmp = $mod->new(@pos, level => 1)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
+}
+print $match eq 'ﾛｸﾞ' ? "ok" : "not ok", " 14\n";
+
+$kstr = 'ﾊﾟｰﾙふﾟﾛｸﾞﾗﾐﾝｸﾞ';
+$k = 'ﾟﾛｸ';
+
+$match = undef;
+if (@tmp = $mod->new(@pos, level => 1)->index($kstr, $k)) {
+    $match = substr($kstr, $tmp[0], $tmp[1]);
+}
+print $match eq 'ﾛｸﾞ' ? "ok" : "not ok", " 15\n";

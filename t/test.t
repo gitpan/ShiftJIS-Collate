@@ -36,6 +36,7 @@ sub shuffle {
   return @array;
 }
 
+1;
 __DATA__
 ‡‚’‡
 ‡‚q”
