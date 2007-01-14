@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use vars qw($VERSION $PACKAGE @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 
-$VERSION = '1.02';
+$VERSION = '1.03';
 
 $PACKAGE = 'ShiftJIS::Collate'; # __PACKAGE__
 
@@ -741,8 +741,8 @@ q|"| => "\x72\x46\x32\x14\x0a\x01",#added
 '[' => "\x79\xd8\x34\x1a\x11\x03",
 '°'  => "\x79\xd8\x34\x1a\x11\x04",
 'V' => "\x7a\x41\x32\x14\x0a\x01",
-'X' => "\x7a\x42\x32\x14\x0a\x01",
-'W' => "\x7a\x43\x32\x14\x0a\x01",
+'W' => "\x7a\x42\x32\x14\x0a\x01",
+'X' => "\x7a\x43\x32\x14\x0a\x01",
 'Y' => "\x7a\x44\x32\x14\x0a\x01",
 'Z' => "\x7a\x45\x32\x14\x0a\x01",
 '¬' => "\xfe\xfc\x32\x14\x0a\x01",
@@ -766,6 +766,11 @@ sub _getClass($) {
 	$w == 0x79 ? 10 : # kana
 	$w <= 0xfc ? 11 : # kanji
 	             12 ; # geta
+}
+sub getClass { # method for testing _getClass()
+    my $self = shift;
+    my $key  = $self->getSortKey(shift);
+    return _getClass($key);
 }
 
 my %Replaced;

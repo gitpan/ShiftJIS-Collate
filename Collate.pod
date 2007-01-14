@@ -9,25 +9,15 @@ ShiftJIS::Collate - collation of Shift-JIS strings
 
   @sorted = ShiftJIS::Collate->new(%tailoring)->sort(@source);
 
-=head1 ABOUT THIS POD
-
-This POD is written in Shift-JIS.
-
-Do you see 'C<あ>' as C<HIRAGANA LETTER A>?
-or 'C<\>' as C<YEN SIGN>, not as C<REVERSE SOLIDUS>?
-Otherwise you'd change your font to an appropriate one.
-(or the POD might be badly converted.)
-
 =head1 DESCRIPTION
 
 This module provides some functions to compare and sort strings
 in Shift-JIS based on B<JIS X 4061:1996>,
-collation of Japanese character strings,
-"Nihongo mojiretsu shogo junban", 「日本語文字列照合順番」.
+collation of Japanese character strings, "Nihongo mojiretsu shogo junban".
 
 This module is an implementation of JIS X 4061:1996 and
 the collation rules are based on that standard.
-See L<Conformance to the Standard>.
+See Conformance to the Standard.
 
 =head2 Constructor and Tailoring
 
@@ -133,9 +123,9 @@ If the parameter is true, this is reversed.
 
 =item C<$result = $Collator-E<gt>cmp($a, $b)>
 
-Returns 1 (when C<$a> is greater than C<$b>)
-or 0 (when C<$a> is equal to C<$b>)
-or -1 (when C<$a> is lesser than C<$b>).
+Returns C<1> (when C<$a> is greater than C<$b>)
+or C<0> (when C<$a> is equal to C<$b>)
+or C<-1> (when C<$a> is lesser than C<$b>).
 
 =item C<$result = $Collator-E<gt>eq($a, $b)>
 
@@ -179,25 +169,10 @@ Sorts a list of strings by B<tanjun shogo>: 'the simple collation'.
 Sorts a list of references to arrays of (spell, reading)
 by B<yomi-hyoki shogo>: 'the collation using readings and spells'.
 
-E.g., an element of @source is probably C<['日本語', 'にほんご']>;
-Though its opposite, C<['にほんご', '日本語']>, is also allowed,
-the order of (spell, reading) is not varied.
-
 B<Yomi-hyoki shogo> is carried out through two comparison stages.
 
-E.g., sort these strings by 'Yomi-hyoki shogo'.
-
-C<['永田', 'ながた']>, C<['小山', 'おやま']>, C<['長田', 'おさだ']>,
-C<['長田', 'ながた']>, C<['小山', 'こやま']>.
-
-First, order by reading
-(C<'おさだ'> E<lt> C<'おやま'> E<lt> 'こやま' E<lt> 'ながた');
-next, order by spelling among strings having the same reading
-(C<'永田'> E<lt> C<'長田'> where both are read as C<'ながた'>).
-
-The result should be C<['長田', 'おさだ']> E<lt> C<['小山', 'おやま']>
-E<lt> C<['小山', 'こやま']> E<lt> C<['永田', 'ながた']> E<lt>
-C<['長田', 'ながた']>.
+First, order by reading;
+next, order by spelling among strings having the same reading.
 
 See also F<sample/yomi.txt>.
 
@@ -209,67 +184,21 @@ by B<kan'i-daihyo-yomi shogo>:
 
 B<Note>: This module does not support B<kihon-daihyo-yomi shogo>:
 'the basic representative reading collation',
-in which B<daihyo-yomi jisho'>, a dictionary of representative readings,
+in which B<daihyo-yomi jisho>, a dictionary of representative readings,
 is required.
 
 B<kan'i-daihyo-yomi shogo> is carried out through B<five> comparison stages.
 This ordered list is an example of the result of C<"kan'i-daihyo-yomi shogo">.
 
-  ['４面体', 'しめんたい'],
-  ['２色性', 'にしょくせい'],
-  ['４次元', 'よじげん'],
-  ['６面体', 'ろくめんたい'],
-  ['α崩壊', 'アルファほうかい'],
-  ['Γ関数', 'ガンマかんすう'],
-  ['β線',   'ベータせん'],
-  ['Ｑ値',   'キューち'],
-  ['ＪＩＳ', 'じす'],
-  ['Perl',   'パール'],
-  ['河西',   'かさい'],
-  ['河合',   'かわい'],
-  ['河田',   'かわだ'],
-  ['河内',   'かわち'],
-  ['河辺',   'かわべ'],
-  ['角田',   'かくた'],
-  ['角田',   'かどた'],
-  ['関東',   'かんとう'],
-  ['河内',   'こうち'],
-  ['沢島',   'さわしま'],
-  ['沢嶋',   'さわしま'],
-  ['沢田',   'さわだ'],
-  ['澤島',   'さわしま'],
-  ['澤嶋',   'さわしま'],
-  ['澤田',   'さわだ'],
-  ['角田',   'つのだ'],
-  ['土井',   'つちい'],
-  ['土居',   'つちい'],
-  ['土井',   'どい'],
-  ['土居',   'どい'],
-
 (1) Compare the character class of the first character of the spell.
-
-  Digit class ('４面体') < Greek class ('α崩壊') <
-Latin class ('ＪＩＳ') < Kanji class ('関東').
 
 (2) Compare the first character of the reading.
 
-  e.g. 'しめんたい' < 'にしょくせい' < 'よじげん' < 'ろくめんたい'.
-
 (3) Compare the first character of the spell.
-
-  e.g. ('河西','河田',etc.) < ('角田','角田') < ('関東');
-
-       ('沢島','沢嶋','沢田') < ('澤島','澤嶋','澤田').
 
 (4) Compare the whole string of the reading.
 
-  e.g. ['河西', 'かさい'] < ['河合', 'かわい'] < ['河田', 'かわだ'];
-
-       ['角田', 'かくた'] < ['角田', 'かどた'].
-
 (5) Compare the whole string of the spell.
-
-  e.g. ['沢島', 'さわしま'] < ['沢嶋', 'さわしま'] < ['沢田', 'さわだ'].
 
 See also F<sample/daihyo.txt>.
 
@@ -292,25 +221,7 @@ B<Notice> that the length of the matching part may differ from
 the length of C<$substring>.
 
 If C<$substring> does not match any part of C<$string>,
-returns C<-1> in scalar context and
-an empty list in list context.
-
-e.g. you say
-
-  use ShiftJIS::Collate;
-  use ShiftJIS::String qw(substr);
-
-  my $Col = ShiftJIS::Collate->new( level => $level );
-  my $str = "* ひらがなとカタカナはレベル３では等しいかな。";
-  my $sub = "かな";
-  my $match;
-  if (my @tmp = $Col->index($str, $sub)) {
-    $match = substr($str, $tmp[0], $tmp[1]);
-  }
-
-If C<$level> is 1, you get C<"がな">;
-if C<$level> is 2 or 3, you get C<"カナ">;
-if C<$level> is 4 or 5, you get C<"かな">.
+returns C<-1> in scalar context and an empty list in list context.
 
 If your C<substr> function is aware of Shift-JIS,
 specify true as C<position_in_bytes>. See L<Constructor and Tailoring>.
@@ -341,15 +252,15 @@ Character classes ordered as following:
     7    digits (European)
     8   'ouji kigou' (Greek and Cyrillic letters, as "European signs")
     9    Latin alphabets
-   10    kana (haragana and katakana)
+   10    kana (hiragana and katakana)
    11    kanji
    12   'geta' mark
 
 In the class, alphabets are collated alphabetically;
-kana letters are AIUEO-betically (in the Gozyuon order, '五十音順');
+kana letters are AIUEO-betically (in the Gozyuon order);
 kanji are in the JIS X 0208 order.
 
-According to JIS X 4061, C<GETA MARK> ('〓', 0x81AC, U+3013)
+According to JIS X 4061, C<GETA MARK> (0x81AC, U+3013)
 must be the greatest character (ordered at the last).
 
 Any character for which the order is no defined,
@@ -361,27 +272,22 @@ is regarded as a completely ignorable character.
 In kana, the order is as shown the following list.
 
     A voiceless kana, the voiced, then the semi-voiced (if exists).
-     (eg. 'か' < 'が'; 'は' < 'ば' < 'ぱ')
 
 =item Level 3: case ordering.
 
 A small Latin is lesser than the corresponding Capital.
 
 In kana, the order is as shown the following list.
-see L<Replacement of PROLONGED SOUND MARK and ITERATION MARKs>.
+see Replacement of PROLONGED SOUND MARK and ITERATION MARKs.
 
     Replaced PROLONGED SOUND MARKs (U+30FC and U+FF70);
     Small Kana;
     Replaced ITERATION MARKs (U+309D, U+309E, U+30FD, and U+30FE);
     then, Normal Kana.
 
-    Then, e.g., 'あー' < 'あぁ' < 'あゝ' < 'ああ'.
-
 =item Level 4: script ordering.
 
 Any hiragana is lesser than the corresponding katakana.
-
-    Then, e.g., 'あ' < 'ア'.
 
 =item Level 5: width ordering.
 
@@ -405,13 +311,13 @@ This modules supports 'Saisho' and 'Kihon' Kanji Classes.
 
 It comprises five kanji-like characters:
 
-    '〃' (0x8156, U+3003)
-    '々' (0x8158, U+3005)
-    '仝' (0x8157, U+4EDD)
-    '〆' (0x8159, U+3006)
-    '〇' (0x815A, U+3007)
+    0x8156 (U+3003)
+    0x8157 (U+4EDD)
+    0x8158 (U+3005)
+    0x8159 (U+3006)
+    0x815A (U+3007)
 
-Any kanji except '仝' are ignored on collation.
+Any kanji except U+4EDD are ignored on collation.
 
 =item the 'kihon' (basic) kanji class
 
@@ -428,14 +334,14 @@ the minimal kanji class. Sorted in the Unicode codepoint order.
 
 =head2 Replacement of PROLONGED SOUND MARKs and ITERATION MARKs
 
-   Character  SJIS    UCS     Name
+   SJIS    UCS     Name
 
-     'ー'    0x815B  U+30FC  KATAKANA-HIRAGANA PROLONGED SOUND MARK
-     'ｰ'     0xB0    U+FF70  HALFWIDTH KATAKANA-HIRAGANA PROLONGED SOUND MARK
-     'ゝ'    0x8154  U+309D  HIRAGANA ITERATION MARK
-     'ゞ'    0x8155  U+309E  HIRAGANA VOICED ITERATION MARK
-     'ヽ'    0x8152  U+30FD  KATAKANA ITERATION MARK
-     'ヾ'    0x8153  U+30FE  KATAKANA VOICED ITERATION MARK
+   0x815B  U+30FC  KATAKANA-HIRAGANA PROLONGED SOUND MARK
+   0xB0    U+FF70  HALFWIDTH KATAKANA-HIRAGANA PROLONGED SOUND MARK
+   0x8154  U+309D  HIRAGANA ITERATION MARK
+   0x8155  U+309E  HIRAGANA VOICED ITERATION MARK
+   0x8152  U+30FD  KATAKANA ITERATION MARK
+   0x8153  U+30FE  KATAKANA VOICED ITERATION MARK
 
 These characters, if replaced, are secondary equal to
 the replacing kana, while ternary not equal to.
@@ -448,43 +354,15 @@ The PROLONGED MARKs (including the halfwidth equivalent)
 are repleced to a normal vowel or nasal
 katakana corresponding to the preceding kana if exists.
 
-  e.g.,
-
-  'カー'   to 'カア'
-  'びー'   to 'びイ'
-  'きゃー' to 'きゃア'
-  'ピュー' to 'ピュウ'
-  'ンー'   to 'ンン'
-  'んー'   to 'んン'
-
 =item HIRAGANA- and KATAKANA ITERATION MARKs
 
 The ITERATION MARKs (VOICELESS) are repleced
 to a normal kana corresponding to the preceding kana if exists.
 
-  e.g.,
-
-  'かゝ'   to 'かか'
-  'ドゝ'   to 'ドと'
-  'んゝ'   to 'んん'
-  'カヽ'   to 'カカ'
-  'ばヽ'   to 'ばハ'
-  'プヽ'   to 'プフ'
-  'ヴィヽ' to 'ヴィイ'
-  'ピュゝ' to 'ピュゆ'
-
 =item HIRAGANA- and KATAKANA VOICED ITERATION MARKs
 
 The VOICED ITERATION MARKs are repleced to a voiced kana
 corresponding to the preceding kana if exists.
-
-  e.g.,
-
-  'はゞ' to 'はば'
-  'プゞ' to 'プぶ'
-  'プヾ' to 'プブ'
-  'こヾ' to 'こゴ'
-  'ウヾ' to 'ウヴ'
 
 =item Cases of no replacement
 
@@ -495,21 +373,7 @@ The unreplaced characters are primary greater than any kana.
 
   e.g.  CJK Ideograph followed by PROLONGED SOUND MARK
         Digit followed by ITERATION MARK
-        'アヾ' ('ア' has no voiced variant)
-
-=item Example
-
-For example, the Japanese string C<'パール'> (C<Perl> in kana)
-has three collation elements: C<KATAKANA PA>,
-C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
-
-  e.g.,
-
-   'パール' is converted to 'パアル' by replacement;
-     primary equal to 'はある';
-     condary equal to 'ぱある', greater than 'はある';
-     tertiary equal to 'ぱーる', lesser than 'パアル';
-     and quartenary greater than 'ぱーる'.
+        Kana that has no voiced variant followed by VOICED ITERATION MARK
 
 =back
 
@@ -544,12 +408,10 @@ C<PROLONGED SOUND MARK replaced by KATAKANA A>, and C<KATAKANA RU>.
 
 SADAHIRO Tomoyuki <SADAHIRO@cpan.org>
 
-  http://homepage1.nifty.com/nomenclator/perl/
+  Copyright(C) 2001-2007, SADAHIRO Tomoyuki. Japan. All rights reserved.
 
-Copyright (C) 2001-2003. All rights reserved.
-
-This module is free software; you can redistribute it
-and/or modify it under the same terms as Perl itself.
+  This module is free software; you can redistribute it
+  and/or modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

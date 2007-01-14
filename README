@@ -1,4 +1,4 @@
-ShiftJIS::Collate version 1.02
+ShiftJIS::Collate version 1.03
 ================
 
 SYNOPSIS
@@ -25,26 +25,10 @@ DEPENDENCIES
 
   Perl 5.003 or later
 
-POD
+COPYRIGHT AND LICENSE
 
-POD for this module is written in Shift-JIS.
-(The explanations are given in English,
-but some sample codes include Shift-JIS literals.)
-The CPAN Archiver should make it unreadable.
+   Copyright(C) 2001-2007, SADAHIRO Tomoyuki. Japan. All rights reserved.
 
-The HTML-ized POD is provided in my website.
-
-  Collate.pod
-    http://homepage1.nifty.com/nomenclator/perl/ShiftJIS-Collate.html
-
-The POD translated in Japanese is also provided in my website.
-
-    http://homepage1.nifty.com/nomenclator/perl/ShiftJIS-Collate-j.html
-
-COPYRIGHT AND LICENCE
-
-This module is free software; you can redistribute it
-and/or modify it under the same terms as Perl itself.
-
-Copyright (C) 2001-2003, SADAHIRO Tomoyuki. Japan. All rights reserved.
+   This module is free software; you can redistribute it
+   and/or modify it under the same terms as Perl itself.
 

@@ -3,9 +3,13 @@ Collate.pm
 Collate.pod
 Makefile.PL
 MANIFEST
+META.yml
 README
-t/test.t
+JAPANESE
+t/class.t
 t/func.t
 t/index.t
+t/nonkanji.t
+t/test.t
 sample/daihyo.txt
 sample/yomi.txt

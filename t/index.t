@@ -1,8 +1,3 @@
-# Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl test.pl'
-
-######################### We start with some black magic to print on failure.
-
 use strict;
 use vars qw($loaded);
 $^W = 1;
@@ -13,7 +8,7 @@ use ShiftJIS::Collate;
 $loaded = 1;
 print "ok 1\n";
 
-######################### End of black magic.
+####
 
 my ($mod, $k, $kstr, $match, @tmp, @pos);
 $mod = "ShiftJIS::Collate";
