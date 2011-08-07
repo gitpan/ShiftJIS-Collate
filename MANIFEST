@@ -1,11 +1,11 @@
 Changes
 Collate.pm
 Collate.pod
+Collate/Japanese.pod
 Makefile.PL
 MANIFEST
 META.yml
 README
-JAPANESE
 t/class.t
 t/func.t
 t/index.t

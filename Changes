@@ -1,5 +1,9 @@
 Revision history for Perl extension ShiftJIS::Collate.
 
+1.10  Sun Aug  7 20:38:33 2011
+    - fix the tarball with world writable files.
+    - rename JAPANESE to Collate/Japanese.pod.
+
 1.03  Sun Jan 14 15:48:21 2007
     - Bug fix: the order between 0x8157 (U+4EDD) and 0x8158 (U+3005)
       was reverse. Correctly 0x8157 < 0x8158.
